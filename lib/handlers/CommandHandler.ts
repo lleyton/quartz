@@ -5,7 +5,7 @@ import { Collection } from 'eris'
 
 import { options, quickEmbed } from '../QuartzTypes'
 
-const types = ['user', 'string', 'channel', 'role', 'message']
+const types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float']
 
 /** CommandHandler Class */
 class CommandHandler {
@@ -62,6 +62,22 @@ class CommandHandler {
   }
 
   /**
+   * Get command by name
+   * @param {string} commandName - The command name.
+   * @return {object} The commands object 
+   */
+  getCommand (commandName: string) {
+    if (!commandName) return undefined
+    let cmd = this.commands.get(commandName)
+    if (!cmd) {
+      const alias = this.aliases.get(commandName)
+      if (!alias) return null
+      cmd = this.commands.get(alias)
+    }
+    return cmd
+  }
+
+  /**
    * Get the commands from module
    * @param {string} module - The module folder.
    * @return {array} The commands in module.
@@ -110,27 +126,11 @@ class CommandHandler {
   }
 
   /**
-   * Get command by name
-   * @param {string} commandName - The command name.
-   * @return {object} The commands object 
-   */
-  getCommand (commandName: string) {
-    if (!commandName) return undefined
-    let cmd = this.commands.get(commandName)
-    if (!cmd) {
-      const alias = this.aliases.get(commandName)
-      if (!alias) return null
-      cmd = this.commands.get(alias)
-    }
-    return cmd
-  }
-
-  /**
    * Get server settings
    * @param {object} msg - The message object
    * @return {object} The settings object 
    */
-  settings (msg: object) {
+  settings (msg: any) {
     if (typeof this._settings !== 'function') return this._settings
     else return this._settings(msg)
   }
@@ -140,7 +140,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The footer text 
    */
-  text (msg: object) {
+  text (msg: any) {
     if (typeof this._text !== 'function') return this._text
     else return this._text(msg)
   }
@@ -150,7 +150,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The footer logo 
    */
-  logo (msg: object) {
+  logo (msg: any) {
     if (typeof this._logo !== 'function') return this._logo
     else return this._logo(msg)
   }
@@ -160,7 +160,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The footer color 
    */
-  color (msg: object) {
+  color (msg: any) {
     if (typeof this._color !== 'function') return this._color
     else return this._color(msg)
   }
@@ -170,7 +170,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The prefix
    */
-  prefix (msg: object) {
+  prefix (msg: any) {
     if (typeof this._prefix !== 'function') return this._prefix
     else return this._prefix(msg)
   }
