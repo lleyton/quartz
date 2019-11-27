@@ -1,5 +1,4 @@
-const QuartzError = require('../util/QuartzError')
-const Base = require('./Base')
+import Base from './Base'
 
 /** Event Class */
 class Event extends Base {
@@ -8,11 +7,14 @@ class Event extends Base {
    * @param {object} client - Client object
    * @param {object} options - Options object
    */
-  constructor (client, options = {}) {
-    super(client, { module: options.module })
+  private _client: any
+  name: string
+
+  constructor (client: any, options = {}) {
+    super(client)
     const {
       name = ''
-    } = options
+    }: any = options
 
     this.name = name
     this._client = client
@@ -22,15 +24,15 @@ class Event extends Base {
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  get client () {
+  public get client () {
     return this._client
   }
 
   /**
    * Run when command called
    */
-  run () {
-    throw new QuartzError('NOT_IMPLEMENTED', this.constructor.name, 'run')
+  public run () {
+    throw new Error(`${this.constructor.name}#run has not been implemented`)
   }
 }
-module.exports = Event
+export default Event

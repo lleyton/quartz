@@ -1,8 +1,11 @@
-const QuartzError = require('../util/QuartzError')
-const Embed = require('../structures/Embed')
-const { readdirSync, statSync } = require('fs')
-const { join, sep, resolve } = require('path')
-const { Collection } = require('eris')
+import Embed from '../structures/Embed'
+import { readdirSync, statSync } from 'fs'
+import { join, sep, resolve } from 'path'
+import { Collection } from 'eris'
+
+import { options, quickEmbed } from '../QuartzTypes'
+
+const types = ['user', 'string', 'channel', 'role', 'message']
 
 /** CommandHandler Class */
 class CommandHandler {
@@ -11,7 +14,22 @@ class CommandHandler {
    * @param {object} quartz - QuartzClient object
    * @param {object} options - commandHandler options
    */
-  constructor (quartz, options = {}) {
+  private _quartz: any
+  private _prefix: any
+  private _settings: any
+  private _text: any
+  private _logo: any
+  private _color : any
+  directory: string
+  debug: boolean
+  defaultCooldown: number
+  commands: any
+  modules: any
+  aliases: any
+  cooldowns: any
+
+  constructor (quartz: any, options: options['commandHandler']) {
+    if (!options) options = { directory: './commands', prefix: '!', debug: false, defaultCooldown: 1000, settings: null, text: 'Quartz', logo: '', color: 0xFFFFFF }
     this._quartz = quartz
     this.directory = options.directory || './commands'
     this.debug = options.debug || false
@@ -48,9 +66,9 @@ class CommandHandler {
    * @param {string} module - The module folder.
    * @return {array} The commands in module.
    */
-  async getCommands (module) {
+  async getCommands (module: string) {
     const files = await readdirSync(`${this.directory}${sep}${module}`).filter(f => f.endsWith('.js'))
-    if (files.length <= 0) throw new QuartzError('NO_FILES_IN_FOLDER', `${this.directory}${sep}${module}`)
+    if (files.length <= 0) throw new Error(`No files found in commands folder '${this.directory}'`)
     return files.map(file => {
       const commandName = file.replace(/\.[^/.]+$/, '')
       return this.getCommand(commandName)
@@ -71,50 +89,24 @@ class CommandHandler {
    */
   async loadCommands () {
     const modules = await this.loadModules()
-    if (modules.length <= 0) throw new QuartzError('FOLDER_NOT_FOUND', this.directory)
+    if (modules.length <= 0) throw new Error(`No category folders found in ${this.directory}`)
     await modules.forEach(async module => {
       const files = await readdirSync(`${this.directory}${sep}${module}`).filter(f => f.endsWith('.js'))
-      if (files.length <= 0) throw new QuartzError('NO_FILES_IN_FOLDER', `${this.directory}${sep}${module}`)
+      if (files.length <= 0) throw new Error(`No files found in commands folder ${this.directory}${sep}${module}`)
       await files.forEach(async file => {
         const Command = require(resolve(`${this.directory}${sep}${module}${sep}${file}`))
         const cmd = new Command(this.client)
-        if (!cmd.name) throw new QuartzError('CMD_MISSING_NAME', `${this.directory}${sep}${module}${sep}${file}`)
-        if (this.commands.get(cmd.name.toLowerCase())) throw new QuartzError('CMD_ALREADY_EXISTS', cmd.name)
-        await cmd.aliases.forEach(alias => {
-          if (this.aliases.get(alias)) throw new QuartzError('ALIAS_CONFLICT', alias, cmd.name)
+        if (!cmd.name) throw new Error(`Command ${this.directory}${sep}${module}${sep}${file} is missing a name`)
+        if (this.commands.get(cmd.name.toLowerCase())) throw new Error(`Command ${cmd.name} already exists`)
+        await cmd.aliases.forEach((alias: string) => {
+          if (this.aliases.get(alias)) throw new Error(`Alias '${alias}' of '${cmd.name}' already exists`)
         })
         this.commands.set(cmd.name.toLowerCase(), cmd)
         this.modules.set(cmd.name, module)
         if (this.debug) this.quartz.logger.info(`Loading command ${cmd.name} from ${module}`)
-        if (cmd.aliases && cmd.aliases.length > 0) await cmd.aliases.forEach(alias => this.aliases.set(alias, cmd.name))
+        if (cmd.aliases && cmd.aliases.length > 0) await cmd.aliases.forEach((alias: string) => this.aliases.set(alias, cmd.name))
       })
     })
-  }
-
-  /**
-   * Reload command
-   * @param {string} commandName - The command name.
-   */
-  async reloadCommand (commandName) {
-    const cmd = this.commands.get(commandName.toLowerCase())
-    if (!cmd) return undefined
-    const module = this.modules.get(commandName)
-    delete require.cache[require.resolve(`${this.directory}${sep}${module}${sep}${commandName}.js`)]
-    cmd.aliases.forEach(alias => this.aliases.delete(alias))
-    this.modules.delete(commandName)
-    this.commands.delete(commandName.toLowerCase())
-    const Command = require(resolve(`${this.directory}${sep}${module}${sep}${commandName}`))
-    const newCmd = new Command(this.client)
-    if (!newCmd) throw new QuartzError('CMD_FILE_EMPTY', `${this.directory}${sep}${module}${sep}${commandName}`)
-    if (!newCmd.name) throw new QuartzError('CMD_MISSING_NAME', `${this.directory}${sep}${module}${sep}${commandName}`)
-    if (this.commands.get(cmd.name.toLowerCase())) throw new QuartzError('CMD_ALREADY_EXISTS', cmd.name)
-    await cmd.aliases.forEach(alias => {
-      if (this.aliases.get(alias)) throw new QuartzError('ALIAS_CONFLICT', alias, cmd.name)
-    })
-    this.commands.set(cmd.name.toLowerCase(), cmd)
-    this.modules.set(cmd.name, module)
-    if (this.debug) this.quartz.logger.info(`Loading command ${cmd.name} from ${module}`)
-    if (cmd.aliases && cmd.aliases.length > 0) await cmd.aliases.forEach(alias => this.aliases.set(alias, cmd.name))
   }
 
   /**
@@ -122,7 +114,7 @@ class CommandHandler {
    * @param {string} commandName - The command name.
    * @return {object} The commands object 
    */
-  getCommand (commandName) {
+  getCommand (commandName: string) {
     if (!commandName) return undefined
     let cmd = this.commands.get(commandName)
     if (!cmd) {
@@ -138,7 +130,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {object} The settings object 
    */
-  async settings (msg) {
+  settings (msg: object) {
     if (typeof this._settings !== 'function') return this._settings
     else return this._settings(msg)
   }
@@ -148,7 +140,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The footer text 
    */
-  async text (msg) {
+  text (msg: object) {
     if (typeof this._text !== 'function') return this._text
     else return this._text(msg)
   }
@@ -158,7 +150,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The footer logo 
    */
-  async logo (msg) {
+  logo (msg: object) {
     if (typeof this._logo !== 'function') return this._logo
     else return this._logo(msg)
   }
@@ -168,7 +160,7 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The footer color 
    */
-  async color (msg) {
+  color (msg: object) {
     if (typeof this._color !== 'function') return this._color
     else return this._color(msg)
   }
@@ -178,38 +170,38 @@ class CommandHandler {
    * @param {object} msg - The message object
    * @return {string} The prefix
    */
-  async prefix (msg) {
+  prefix (msg: object) {
     if (typeof this._prefix !== 'function') return this._prefix
     else return this._prefix(msg)
   }
 
   /**
    * Return a embed
-   * @param {object} message - The message object
+   * @param {string} message - The embed content
    * @param {object} options - The embed options
    * @return {object} The embed
    */
-  async embed (message, options = {}) {
-    const embed = new Embed()
-    if (options.reply && !options.bold) embed.description(`<@${this.author.id}>, ${message}`)
-    else if (options.bold && !options.reply) embed.description(`**${message}**`)
-    else if (options.bold && options.reply) embed.description(`**<@${this.author.id}>, ${message}**`)
-    else embed.description(message)
-    if (options.premium) embed.color(this.client.config.embed.premium.color)
-    else if (options.color) embed.color(options.color)
-    else embed.color(+await this.color())
-    if (options.footer) embed.footer(await this.text(), await this.logo())
-    return this.channel.createMessage({ embed: embed })
+  async embed (msg: any, message: string, options: quickEmbed) {
+    const generateEmbed = new Embed()
+    if (!options) options = { reply: false, bold: false, color: null, footer: false }
+    if (options.reply && !options.bold) generateEmbed.setDescription(`<@${msg.author.id}>, ${message}`)
+    else if (options.bold && !options.reply) generateEmbed.setDescription(`**${message}**`)
+    else if (options.bold && options.reply) generateEmbed.setDescription(`**<@${msg.author.id}>, ${message}**`)
+    else generateEmbed.setDescription(message)
+    if (options.color) generateEmbed.setColor(options.color)
+    else generateEmbed.setColor(+await msg.color())
+    if (options.footer) generateEmbed.setFooter(await msg.text(), await msg.logo())
+    return msg.channel.createMessage({ embed: generateEmbed })
   }
 
   /**
    * Runs commands
-   * @param {object} message - The message object
+   * @param {object} msg - The message object
    */
-  async _onMessageCreate (msg) {
+  async _onMessageCreate (msg: any) {
     if (!msg.author || msg.author.bot || !msg.channel.guild) return
     const prefix = await this.prefix(msg)
-    const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const content = msg.content.toLowerCase()
     if (Array.isArray(prefix)) {
       prefix.forEach(p => escapeRegex(p))
@@ -229,14 +221,42 @@ class CommandHandler {
     msg.content = msg.content.replace(/<@!/g, '<@')
     const args = msg.content.slice(msg.prefix.length).trim().split(/ +/)
     const label = args.shift().toLowerCase()
-    const command = await this.getCommand(label)
+    const command = this.getCommand(label)
     if (!command) return
     msg.command = command
-    msg.embed = this.embed.bind(msg)
-    msg.settings = this.settings.bind(this, msg)
     msg.color = this.color.bind(this, msg)
     msg.logo = this.logo.bind(this, msg)
     msg.text = this.text.bind(this, msg)
+    msg.embed = this.embed.bind(this, msg)
+    msg.settings = this.settings.bind(this, msg)
+    let parsedArgs: any = null
+    if (command.args && command.args.length > 0) {
+      parsedArgs = {}
+      let text = args.join(' ')
+      let quoted = text.match(/“(?:\.|(\\\“)|[^\“”\n])*”|(?:[^\s"]+|"[^"]*")/g)
+      if (quoted && quoted.length > 0) {
+        quoted = quoted.map((q: string) => {
+          if (q.startsWith('"') && q.endsWith('"') || q.startsWith('“') && q.endsWith('”')) return q.slice(1, -1)
+          else return q
+        })
+      }
+      let num = 0
+      for (const a in command.args) {
+        num++
+        if (command.args[a].key && command.args[a].type && types.includes(command.args[a].type)) { 
+          const CustomType = require(`../types/${command.args[a].type}`).default
+          const type = new CustomType(this.client)
+          const def = command.args[a].default || undefined
+          let result = null
+          if (num === command.args.length) {
+            quoted.splice(0, command.args.length - 1)
+            result = type.parse(quoted.join(' ') || def, msg)
+          } else result = type.parse(quoted[a] || def, msg)
+          if (!result && command.args[a].prompt) return msg.embed(command.args[a].prompt)
+          parsedArgs[command.args[a].key] = result || undefined
+        }
+      }
+    }
     const botPermissions = msg.channel.permissionsOf(this.client.user.id)
     if (!botPermissions.has('sendMessages') || !botPermissions.has('embedLinks')) return
     if (command.botPermissions) {
@@ -262,7 +282,7 @@ class CommandHandler {
     if (command.cooldown && command.cooldown.expires && command.cooldown.command) {
       const checkCooldown = this.cooldowns.get(msg.author.id)
       if (checkCooldown && checkCooldown.expires) {
-        if (new Date(checkCooldown.expires) < Date.now()) {
+        if (new Date(checkCooldown.expires) < new Date()) {
           this.cooldowns.delete(msg.author.id)
           this.cooldowns.set(msg.author.id, { expires: Date.now() + command.cooldown.expires, notified: false, command: 1 })
         } else if (!checkCooldown.notified && checkCooldown.command >= msg.command.cooldown.command) {
@@ -297,13 +317,13 @@ class CommandHandler {
         }
       }
     }
-    await command.run(msg, args)
+    await command.run(msg, parsedArgs || args)
       .then(() => {
-        this.quartz.emit('commandRun', msg, command)
+        return this.quartz.emit('commandRun', msg, command)
       })
-      .catch(error => {
-        this.quartz.logger.error(error)
+      .catch((error: any) => {
+        return this.quartz.logger.error(error)
       })
   }
 }
-module.exports = CommandHandler
+export default CommandHandler

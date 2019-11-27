@@ -4,6 +4,30 @@ class Embed {
    * Create the embed
    * @param {object} data - Data object
    */
+
+  fields: any[]
+  url: string
+  author: {
+    name: string,
+    icon_url: string,
+    url: string
+  }
+  color: string
+  description: string
+  file: string
+  footer: {
+    text: string,
+    icon_url: string
+  }
+  image: {
+    url: string
+  }
+  date: any
+  title: string
+  thumbnail: {
+    url: string
+  }
+
   constructor (data = {}) {
     this.fields = []
     Object.assign(this, data)
@@ -16,7 +40,7 @@ class Embed {
    * @param {string} icon - Icon of user
    * @param {string} url - A url
    */
-  author (name, icon, url) {
+  setAuthor (name: string, icon: string, url: string) {
     this.author = { name, icon_url: icon, url }
     return this
   }
@@ -25,7 +49,7 @@ class Embed {
    * Color for the embed
    * @param {string} color - A color
    */
-  color (color) {
+  setColor (color: any) {
     this.color = color
     return this
   }
@@ -34,7 +58,7 @@ class Embed {
    * Description for the embed
    * @param {string} desc - A description
    */
-  description (desc) {
+  setDescription (desc: string) {
     this.description = desc.toString().substring(0, 2048)
     return this
   }
@@ -45,7 +69,7 @@ class Embed {
    * @param {string} value - A value
    * @param {boolean} inline - A inline
    */
-  field (name, value, inline = false) {
+  addField (name: string, value: string, inline: boolean = false) {
     if (this.fields.length >= 25) return this
     else if (!name) return this
     else if (!value) return false
@@ -57,7 +81,7 @@ class Embed {
    * File for the embed
    * @param {string} file - A file
    */
-  file (file) {
+  setFile (file: string) {
     this.file = file
     return this
   }
@@ -67,7 +91,7 @@ class Embed {
    * @param {string} text - A text
    * @param {string} icon - A icon
    */
-  footer (text, icon) {
+  setFooter (text: string, icon: string) {
     this.footer = { text: text.toString().substring(0, 2048), icon_url: icon }
     return this
   }
@@ -76,7 +100,7 @@ class Embed {
    * Image for the embed
    * @param {string} url - A url
    */
-  image (url) {
+  setImage (url: string) {
     this.image = { url }
     return this
   }
@@ -85,7 +109,7 @@ class Embed {
    * Timestamp for the embed
    * @param {date} time - A date
    */
-  timestamp (time = new Date()) {
+  setTimestamp (time = new Date()) {
     this.date = time
     return this
   }
@@ -94,7 +118,7 @@ class Embed {
    * Title for the embed
    * @param {string} title - A title
    */
-  title (title) {
+  setTitle (title: string) {
     this.title = title.toString().substring(0, 256)
     return this
   }
@@ -103,7 +127,7 @@ class Embed {
    * Thumbnail for the embed
    * @param {string} url - A url
    */
-  thumbnail (url) {
+  setThumbnail (url: string) {
     this.thumbnail = { url }
     return this
   }
@@ -112,10 +136,10 @@ class Embed {
    * URL for the embed
    * @param {string} url - A url
    */
-  url (url) {
+  setURL (url: string) {
     this.url = url
     return this
   }
 }
 
-module.exports = Embed
+export default Embed

@@ -1,7 +1,8 @@
-const QuartzError = require('../util/QuartzError')
-const { sep, resolve } = require('path')
-const { readdirSync } = require('fs')
-const { Collection } = require('eris')
+import { sep, resolve } from 'path'
+import { readdirSync } from 'fs'
+import { Collection } from 'eris'
+import { options } from '../QuartzTypes'
+
 const quartzEvents = ['missingPermission', 'commandRun', 'ratelimited']
 
 /** EventHandler Class */
@@ -11,7 +12,13 @@ class EventHandler {
    * @param {object} quartz - QuartzClient object
    * @param {object} options - eventHandler options
    */
-  constructor (quartz, options = {}) {
+  private _quartz: any
+  directory: string
+  debug: boolean
+  events: any
+
+  constructor (quartz: any, options: options['eventHandler']) {
+    if (!options) options = { directory: './commands', debug: false }
     this._quartz = quartz
     this.directory = options.directory
     this.debug = options.debug
@@ -38,14 +45,14 @@ class EventHandler {
    * Load the events from the folder
    */
   async loadEvents () {
-    const files = await readdirSync(this.directory).filter(f => f.endsWith('.js'))
-    if (files.length <= 0) throw new QuartzError('NO_FILES_IN_FOLDER', this.directory)
-    await files.forEach(file => {
+    const files = await readdirSync(this.directory).filter((f: string) => f.endsWith('.js'))
+    if (files.length <= 0) throw new Error(`No files found in events folder '${this.directory}'`)
+    await files.forEach((file: string) => {
       const Event = require(resolve(`${this.directory}${sep}${file}`))
       const evt = new Event(this.client)
-      if (!evt) throw new QuartzError('EVT_FILE_EMPTY', `${this.directory}${sep}${file}`)
-      if (!evt.name) throw new QuartzError('EVT_MISSING_NAME', `${this.directory}${sep}${file}`)
-      if (this.events.get(evt.name)) throw new QuartzError('EVT_ALREADY_EXISTS', evt.name)
+      if (!evt) throw new Error(`Event ${this.directory}${sep}${file} file is empty`)
+      if (!evt.name) throw new Error(`Event ${this.directory}${sep}${file} is missing a name`)
+      if (this.events.get(evt.name)) throw new Error(`Event ${this.directory}${sep}${file} already exists`)
       this.events.set(evt.name, evt)
       if (this.debug) this.quartz.logger.info(`Loading event ${evt.name}`)
       if (quartzEvents.includes(evt.name)) this.quartz.on(evt.name, evt.run.bind(this))
@@ -58,11 +65,11 @@ class EventHandler {
    * Runs event
    * @param {object} msg - The message object
    */
-  async _onMessageCreate (msg) {
+  async _onMessageCreate (msg: any) {
     if (!msg.author || msg.author.bot) return
     msg.command = false
     const prefix = await this.client.commandHandler.prefix(msg)
-    const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const content = msg.content.toLowerCase()
     if (Array.isArray(prefix)) {
       prefix.forEach(p => escapeRegex(p))
@@ -86,4 +93,4 @@ class EventHandler {
     return event.run.call(this, msg)
   }
 }
-module.exports = EventHandler
+export default EventHandler

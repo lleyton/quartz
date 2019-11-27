@@ -1,5 +1,5 @@
-const QuartzError = require('../util/QuartzError')
-const Base = require('./Base')
+import Base from './Base'
+import { cooldown } from '../QuartzTypes'
 
 /** Command Class */
 class Command extends Base {
@@ -8,16 +8,29 @@ class Command extends Base {
    * @param {object} client - Client object
    * @param {object} options - Options object
    */
-  constructor (client, options = {}) {
-    super(client, { module: options.module })
+  private _client: any
+  name: string
+  aliases: string[]
+  args: any[]
+  channel: string | null
+  ownerOnly: boolean
+  guildOnly: boolean
+  devOnly: boolean
+  description: string
+  botPermissions: any
+  userPermissions: any
+  cooldown: cooldown
+
+  constructor (client: any, options = {}) {
+    super(client)
     const {
       name = '',
       aliases = [],
+      args = [],
       channel = null,
       ownerOnly = false,
       guildOnly = true,
       devOnly = false,
-      premium = '',
       description = '',
       cooldown = {
         expires: 5000,
@@ -25,15 +38,15 @@ class Command extends Base {
       },
       botPermissions = this.botPermissions,
       userPermissions = this.userPermissions
-    } = options
+    }: any = options
 
     this.name = name
     this.aliases = aliases
+    this.args = args
     this.channel = channel
     this.ownerOnly = Boolean(ownerOnly)
     this.guildOnly = Boolean(guildOnly)
     this.devOnly = Boolean(devOnly)
-    this.premium = premium
     this.description = description
     this.cooldown = cooldown
     this.botPermissions = typeof botPermissions === 'function' ? botPermissions.bind(this) : botPermissions
@@ -45,7 +58,7 @@ class Command extends Base {
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  get client () {
+  public get client () {
     return this._client
   }
 
@@ -53,7 +66,7 @@ class Command extends Base {
    * Run when command called
    */
   run () {
-    throw new QuartzError('NOT_IMPLEMENTED', this.constructor.name, 'run')
+    throw new Error(`${this.constructor.name}#run has not been implemented`)
   }
 }
-module.exports = Command
+export default Command

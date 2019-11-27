@@ -5,7 +5,9 @@ class Base {
    * Create the eventHandler
    * @param {object} quartzClient - QuartzClient object
    */
-  constructor (quartzClient) {
+  private _quartz: any
+
+  constructor (quartzClient: any) {
     this._quartz = quartzClient
   }
 
@@ -13,7 +15,7 @@ class Base {
    * Get the quartz client object
    * @return {object} The quartz client object.
    */
-  get quartz () {
+  public get quartz () {
     return this._quartz
   }
 
@@ -21,7 +23,7 @@ class Base {
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  get client () {
+  public get client () {
     return this._quartz.client
   }
 
@@ -29,8 +31,8 @@ class Base {
    * Get the logger object
    * @return {object} The logger object.
    */
-  get logger () {
+  public get logger () {
     return this._quartz.logger
   }
 }
-module.exports = Base
+export default Base

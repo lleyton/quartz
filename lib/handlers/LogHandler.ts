@@ -1,4 +1,4 @@
-const COLOR = require('chalk')
+import COLOR from 'chalk'
 
 /** LogHandler Class */
 class LogHandler {
@@ -6,7 +6,7 @@ class LogHandler {
    * Send warning to console
    * @param {string} message - The warning message
    */
-  warn (...message) {
+  public warn (...message: any[]) {
     console.log(COLOR.yellow('[WARNING]'))
     console.warn(...message)
   }
@@ -15,7 +15,7 @@ class LogHandler {
    * Send error to console
    * @param {string} message - The error message
    */
-  error (...message) {
+  public error (...message: any[]) {
     console.log(COLOR.red('[ERROR]'))
     console.log(...message)
     console.trace()
@@ -25,7 +25,7 @@ class LogHandler {
    * Send info to console
    * @param {string} message - The info message
    */
-  info (...message) {
+  public info (...message: any[]) {
     console.log(COLOR.hex('#7289DA')('[Points]: ') + COLOR.yellow(...message))
   }
 
@@ -33,8 +33,8 @@ class LogHandler {
    * Send console to console
    * @param {string} message - The console message
    */
-  console (...message) {
+  public console (...message: any[]) {
     console.log(...message)
   }
 }
-module.exports = LogHandler
+export default LogHandler
