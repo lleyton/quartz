@@ -17,7 +17,7 @@
     "typescript": "^3.7.2"
   },
   "peerDependencies": {
-    "eris": "^0.10.1"
+    "eris": "^0.11.1"
   },
   "standard": {
     "parser": "typescript-eslint-parser",

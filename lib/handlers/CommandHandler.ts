@@ -35,10 +35,10 @@ class CommandHandler {
     this.debug = options.debug || false
     this._prefix = options.prefix || '!'
     this.defaultCooldown = options.defaultCooldown || 10000
-    this.commands = new Collection()
-    this.modules = new Collection()
-    this.aliases = new Collection()
-    this.cooldowns = new Collection()
+    this.commands = new Collection(null)
+    this.modules = new Collection(null)
+    this.aliases = new Collection(null)
+    this.cooldowns = new Collection(null)
     this._settings = options.settings || undefined
     this._text = options.text || 'Quartz'
     this._logo = options.logo || ''

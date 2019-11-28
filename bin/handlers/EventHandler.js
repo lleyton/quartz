@@ -12,7 +12,7 @@ class EventHandler {
         this._quartz = quartz;
         this.directory = options.directory;
         this.debug = options.debug;
-        this.events = new eris_1.Collection();
+        this.events = new eris_1.Collection(null);
     }
     /**
      * Get the quartz client object

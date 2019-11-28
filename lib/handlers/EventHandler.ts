@@ -22,7 +22,7 @@ class EventHandler {
     this._quartz = quartz
     this.directory = options.directory
     this.debug = options.debug
-    this.events = new Collection()
+    this.events = new Collection(null)
   }
 
   /**

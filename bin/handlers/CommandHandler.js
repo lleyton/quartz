@@ -7,7 +7,7 @@ const Embed_1 = __importDefault(require("../structures/Embed"));
 const fs_1 = require("fs");
 const path_1 = require("path");
 const eris_1 = require("eris");
-const types = ['user', 'string', 'channel', 'role', 'message'];
+const types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float'];
 /** CommandHandler Class */
 class CommandHandler {
     constructor(quartz, options) {
@@ -18,10 +18,10 @@ class CommandHandler {
         this.debug = options.debug || false;
         this._prefix = options.prefix || '!';
         this.defaultCooldown = options.defaultCooldown || 10000;
-        this.commands = new eris_1.Collection();
-        this.modules = new eris_1.Collection();
-        this.aliases = new eris_1.Collection();
-        this.cooldowns = new eris_1.Collection();
+        this.commands = new eris_1.Collection(null);
+        this.modules = new eris_1.Collection(null);
+        this.aliases = new eris_1.Collection(null);
+        this.cooldowns = new eris_1.Collection(null);
         this._settings = options.settings || undefined;
         this._text = options.text || 'Quartz';
         this._logo = options.logo || '';
@@ -40,6 +40,23 @@ class CommandHandler {
      */
     get client() {
         return this._quartz.client;
+    }
+    /**
+     * Get command by name
+     * @param {string} commandName - The command name.
+     * @return {object} The commands object
+     */
+    getCommand(commandName) {
+        if (!commandName)
+            return undefined;
+        let cmd = this.commands.get(commandName);
+        if (!cmd) {
+            const alias = this.aliases.get(commandName);
+            if (!alias)
+                return null;
+            cmd = this.commands.get(alias);
+        }
+        return cmd;
     }
     /**
      * Get the commands from module
@@ -93,23 +110,6 @@ class CommandHandler {
                     await cmd.aliases.forEach((alias) => this.aliases.set(alias, cmd.name));
             });
         });
-    }
-    /**
-     * Get command by name
-     * @param {string} commandName - The command name.
-     * @return {object} The commands object
-     */
-    getCommand(commandName) {
-        if (!commandName)
-            return undefined;
-        let cmd = this.commands.get(commandName);
-        if (!cmd) {
-            const alias = this.aliases.get(commandName);
-            if (!alias)
-                return null;
-            cmd = this.commands.get(alias);
-        }
-        return cmd;
     }
     /**
      * Get server settings
@@ -258,7 +258,6 @@ class CommandHandler {
                     let result = null;
                     if (num === command.args.length) {
                         quoted.splice(0, command.args.length - 1);
-                        console.log(quoted);
                         result = type.parse(quoted.join(' ') || def, msg);
                     }
                     else
