@@ -1,3 +1,5 @@
+declare module 'quartz'
+
 declare namespace quartz {
   export interface options {
     owner: string | null,
@@ -181,4 +183,4 @@ declare namespace quartz {
     parse(value: string, msg: any)
   }
 }
-export = Quartz
+export = quartz
