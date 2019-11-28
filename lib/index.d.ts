@@ -1,4 +1,4 @@
-declare namespace Quartz {
+declare namespace quartz {
   export interface options {
     owner: string | null,
     eventHandler: {
