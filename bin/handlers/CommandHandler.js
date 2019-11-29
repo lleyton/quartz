@@ -88,7 +88,7 @@ class CommandHandler {
         if (modules.length <= 0)
             throw new Error(`No category folders found in ${this.directory}`);
         await modules.forEach(async (module) => {
-            const files = await fs_1.readdirSync(`${this.directory}${path_1.sep}${module}`).filter(f => f.endsWith('.js'));
+            const files = await fs_1.readdirSync(`${this.directory}${path_1.sep}${module}`).filter(f => f.endsWith('.js') || f.endsWith('.ts'));
             if (files.length <= 0)
                 throw new Error(`No files found in commands folder ${this.directory}${path_1.sep}${module}`);
             await files.forEach(async (file) => {
@@ -256,6 +256,10 @@ class CommandHandler {
                     const type = new CustomType(this.client);
                     const def = command.args[a].default || undefined;
                     let result = null;
+                    if (!def) {
+                        if (!quoted || quoted.length <= 0 || !quoted[a] || quoted[a].length <= 0)
+                            return msg.embed(command.args[a].prompt || `A ${command.args[a].type} type was not provided.`);
+                    }
                     if (num === command.args.length) {
                         quoted.splice(0, command.args.length - 1);
                         result = type.parse(quoted.join(' ') || def, msg);

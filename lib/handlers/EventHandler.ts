@@ -45,7 +45,7 @@ class EventHandler {
    * Load the events from the folder
    */
   async loadEvents () {
-    const files = await readdirSync(this.directory).filter((f: string) => f.endsWith('.js'))
+    const files = await readdirSync(this.directory).filter((f: string) => f.endsWith('.js') || f.endsWith('.ts'))
     if (files.length <= 0) throw new Error(`No files found in events folder '${this.directory}'`)
     await files.forEach((file: string) => {
       const Event = require(resolve(`${this.directory}${sep}${file}`))

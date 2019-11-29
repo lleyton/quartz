@@ -1,6 +1,4 @@
-declare module 'quartz'
-
-declare namespace quartz {
+declare module 'quartz' {
   export interface options {
     owner: string | null,
     eventHandler: {
@@ -88,21 +86,38 @@ declare namespace quartz {
     logger(): LogHandler
   }
 
-  export class Command extends Base {
+  interface Description {
+    content?: string
+    usage?: string
+    examples?: string[]
+  }
+
+  interface Args {
+    key?: string
+    type?: string
+    prompt?: string
+    default?: string
+  }
+
+  interface CommandOptions {
     name: string
-    aliases: string[]
-    args: any[]
-    channel: string | null
-    ownerOnly: boolean
-    guildOnly: boolean
-    devOnly: boolean
-    description: string
-    botPermissions: any
-    userPermissions: any
-    cooldown: cooldown
-    constructor (client: any)
-    client(): any
-    run(): void
+    aliases?: string[]
+    args?: Args[]
+    channel?: string
+    ownerOnly?: boolean
+    guildOnly?: boolean
+    devOnly?: boolean
+    description?: Description
+    botPermissions?: any
+    userPermissions?: any
+    cooldown?: cooldown
+  }
+
+  export class Command extends Base {
+    client: any
+    constructor (client: any, options: CommandOptions)
+    userPermissions?(...args: any): Promise<any> | null
+    run(...args: any): Promise<any>
   }
 
   export class Embed {
@@ -129,58 +144,61 @@ declare namespace quartz {
       url: string
     }
     constructor(data: any)
-    setAuthor(name: string, icon: string, url: string)
-    setColor(color: any)
-    setDescription(desc: string)
-    addField(name: string, value: string, inline: boolean)
-    setFile(file: string)
-    setFooter(text: string, icon: string)
-    setImage(url: string)
-    setTimestamp (time: any)
-    setTitle(title: string)
-    setThumbnail(url: string)
-    setURL(url: string)
+    setAuthor(name: string, icon: string, url: string): void
+    setColor(color: any): void
+    setDescription(desc: string): void
+    addField(name: string, value: string, inline: boolean): void
+    setFile(file: string): void
+    setFooter(text: string, icon: string): void
+    setImage(url: string): void
+    setTimestamp (time: any): void
+    setTitle(title: string): void
+    setThumbnail(url: string): void
+    setURL(url: string): void
+  }
+
+  interface EventOptions {
+    name: string
   }
 
   export class Event extends Base {
-    name: string
-    client(): any
-    run(): void
+    client: any
+    constructor(client: any, options: EventOptions)
+    run(...args: any): Promise<any>
   }
 
   export class ChannelType {
     client: any
-    parse(value: string, msg: any)
+    parse(value: string, msg: any): any
   }
 
   export class MessageType {
     client: any
-    parse(value: string, msg: any)
+    parse(value: string, msg: any): any
   }
 
   export class RoleType {
     client: any
-    parse(value: string, msg: any)
+    parse(value: string, msg: any): any
   }
 
   export class StringType {
     client: any
-    parse(value: string, msg: any)
+    parse(value: string, msg: any): any
   }
 
   export class IntegerType {
     client: any
-    parse(value: string, msg: any)
+    parse(value: string, msg: any): any
   }
 
   export class FloatType {
     client: any
-    parse(value: string, msg: any)
+    parse(value: string, msg: any): any
   }
 
   export class UserType {
     client: any
-    parse(value: string, msg: any)
+    parse(value: string, msg: any): any
   }
 }
-export = quartz
