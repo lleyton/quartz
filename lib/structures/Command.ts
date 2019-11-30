@@ -1,6 +1,13 @@
 import Base from './Base'
 import { cooldown } from '../QuartzTypes'
 
+interface Args {
+  key?: string
+  type?: string
+  prompt?: string
+  default?: string
+}
+
 /** Command Class */
 class Command extends Base {
   /**
@@ -11,7 +18,7 @@ class Command extends Base {
   private _client: any
   name: string
   aliases: string[]
-  args: any[]
+  args: Args[]
   channel: string | null
   ownerOnly: boolean
   guildOnly: boolean

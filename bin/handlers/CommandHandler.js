@@ -7,6 +7,7 @@ const Embed_1 = __importDefault(require("../structures/Embed"));
 const fs_1 = require("fs");
 const path_1 = require("path");
 const eris_1 = require("eris");
+const ArgumentHandler_1 = __importDefault(require("./ArgumentHandler"));
 const types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float'];
 /** CommandHandler Class */
 class CommandHandler {
@@ -224,7 +225,7 @@ class CommandHandler {
         if (!msg.prefix)
             return;
         msg.content = msg.content.replace(/<@!/g, '<@');
-        const args = msg.content.slice(msg.prefix.length).trim().split(/ +/);
+        let args = msg.content.slice(msg.prefix.length).trim().split(/ +/);
         const label = args.shift().toLowerCase();
         const command = this.getCommand(label);
         if (!command)
@@ -235,43 +236,9 @@ class CommandHandler {
         msg.text = this.text.bind(this, msg);
         msg.embed = this.embed.bind(this, msg);
         msg.settings = this.settings.bind(this, msg);
-        let parsedArgs = null;
-        if (command.args && command.args.length > 0) {
-            parsedArgs = {};
-            let text = args.join(' ');
-            let quoted = text.match(/“(?:\.|(\\\“)|[^\“”\n])*”|(?:[^\s"]+|"[^"]*")/g);
-            if (quoted && quoted.length > 0) {
-                quoted = quoted.map((q) => {
-                    if (q.startsWith('"') && q.endsWith('"') || q.startsWith('“') && q.endsWith('”'))
-                        return q.slice(1, -1);
-                    else
-                        return q;
-                });
-            }
-            let num = 0;
-            for (const a in command.args) {
-                num++;
-                if (command.args[a].key && command.args[a].type && types.includes(command.args[a].type)) {
-                    const CustomType = require(`../types/${command.args[a].type}`).default;
-                    const type = new CustomType(this.client);
-                    const def = command.args[a].default || undefined;
-                    let result = null;
-                    if (!def) {
-                        if (!quoted || quoted.length <= 0 || !quoted[a] || quoted[a].length <= 0)
-                            return msg.embed(command.args[a].prompt || `A ${command.args[a].type} type was not provided.`);
-                    }
-                    if (num === command.args.length) {
-                        quoted.splice(0, command.args.length - 1);
-                        result = type.parse(quoted.join(' ') || def, msg);
-                    }
-                    else
-                        result = type.parse(quoted[a] || def, msg);
-                    if (!result && command.args[a].prompt)
-                        return msg.embed(command.args[a].prompt);
-                    parsedArgs[command.args[a].key] = result || undefined;
-                }
-            }
-        }
+        const parsedArgs = new ArgumentHandler_1.default(this.client, command, args).parse(msg);
+        if (!parsedArgs)
+            return;
         const botPermissions = msg.channel.permissionsOf(this.client.user.id);
         if (!botPermissions.has('sendMessages') || !botPermissions.has('embedLinks'))
             return;
