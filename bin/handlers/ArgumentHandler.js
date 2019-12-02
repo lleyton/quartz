@@ -31,6 +31,19 @@ class ArgumentHandler {
             return msg.embed(`No result for ${key} found.`);
         }
     }
+    default(arg, msg) {
+        if (!arg.default)
+            return undefined;
+        if (typeof arg.default === 'string') {
+            return arg.default;
+        }
+        else if (typeof arg.default === 'function') {
+            return arg.default(msg);
+        }
+        else {
+            return undefined;
+        }
+    }
     parse(msg) {
         if (this.command.args && this.command.args.length > 0) {
             const parsed = {};
@@ -40,25 +53,38 @@ class ArgumentHandler {
                 if (arg.key && arg.type && this.types.includes(arg.type)) {
                     const CustomType = require(`../types/${arg.type}`).default;
                     const type = new CustomType(this.client);
-                    const defaultValue = arg.default || undefined;
+                    const defaultValue = this.default(arg, msg);
+                    console.log(defaultValue);
                     if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg).length <= 0)) {
+                        prompt = true;
+                        return this.prompt(msg, arg.key, arg.prompt);
+                    }
+                    if (!args || args.length <= 0) {
                         prompt = true;
                         return this.prompt(msg, arg.key, arg.prompt);
                     }
                     if (this.command.args.slice(-1)[0].key === arg.key) {
                         args.splice(0, this.command.args.length - 1);
-                        const result = type.parse(args.join(' ') || defaultValue, msg);
+                        let result = type.parse(args.join(' ') || '' || defaultValue || '', msg);
                         if (!result) {
-                            prompt = true;
-                            return this.prompt(msg, arg.key, arg.prompt);
+                            if (defaultValue)
+                                result = defaultValue;
+                            else {
+                                prompt = true;
+                                return this.prompt(msg, arg.key, arg.prompt);
+                            }
                         }
                         parsed[arg.key] = result;
                     }
                     else {
-                        const result = type.parse(args[this.command.args.indexOf(arg)] || defaultValue, msg);
+                        let result = type.parse(args[this.command.args.indexOf(arg)] || defaultValue || '', msg);
                         if (!result) {
-                            prompt = true;
-                            return this.prompt(msg, arg.key, arg.prompt);
+                            if (defaultValue)
+                                result = defaultValue;
+                            else {
+                                prompt = true;
+                                return this.prompt(msg, arg.key, arg.prompt);
+                            }
                         }
                         parsed[arg.key] = result;
                     }

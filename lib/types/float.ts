@@ -5,7 +5,7 @@ class FloatType {
   }
 
   parse (value: string, msg: any) {
-    if (!value || !msg) return undefined
+    if (!value || value.length <= 0 || !msg || typeof value !== 'string') return undefined
     const float = Number.parseFloat(value)
     return float
   }

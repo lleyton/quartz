@@ -95,8 +95,8 @@ declare module 'quartz' {
   interface Args {
     key?: string
     type?: string
-    prompt?: string
-    default?: string
+    prompt?: string | ((msg: any) => void)
+    default?: string | ((msg: any) => void)
   }
 
   interface CommandOptions {

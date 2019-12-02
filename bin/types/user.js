@@ -8,7 +8,7 @@ class UserType {
         this.client = client;
     }
     parse(value, msg) {
-        if (!value || !msg)
+        if (!value || value.length <= 0 || !msg || typeof value !== 'string')
             return undefined;
         const match = value.match(/^(?:<@!?)?([0-9]+)>?$/);
         if (match) {

@@ -4,8 +4,8 @@ import { cooldown } from '../QuartzTypes'
 interface Args {
   key?: string
   type?: string
-  prompt?: string
-  default?: string
+  prompt?: string | ((msg: any) => void)
+  default?: string | ((msg: any) => void)
 }
 
 /** Command Class */

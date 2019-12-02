@@ -9,7 +9,7 @@ class RoleType {
   }
 
   parse (value: string, msg: any) {
-    if (!value || !msg || !msg.channel.guild) return undefined
+    if (!value || value.length <= 0 || !msg || !msg.channel.guild || typeof value !== 'string') return undefined
     const match = value.match(/^(?:<@&)?([0-9]+)>?$/)
     if (match) {
       try {

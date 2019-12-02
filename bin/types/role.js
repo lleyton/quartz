@@ -8,7 +8,7 @@ class RoleType {
         this.client = client;
     }
     parse(value, msg) {
-        if (!value || !msg || !msg.channel.guild)
+        if (!value || value.length <= 0 || !msg || !msg.channel.guild || typeof value !== 'string')
             return undefined;
         const match = value.match(/^(?:<@&)?([0-9]+)>?$/);
         if (match) {
