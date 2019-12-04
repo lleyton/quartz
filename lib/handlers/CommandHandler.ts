@@ -110,9 +110,10 @@ class CommandHandler {
       const files = await readdirSync(`${this.directory}${sep}${module}`).filter(f => f.endsWith('.js') || f.endsWith('.ts'))
       if (files.length <= 0) throw new Error(`No files found in commands folder ${this.directory}${sep}${module}`)
       await files.forEach(async file => {
-        const Command = require(resolve(`${this.directory}${sep}${module}${sep}${file}`))
+        let Command = await import(resolve(`${this.directory}${sep}${module}${sep}${file}`))
+        if (typeof Command !== 'function') Command = Command.default
         const cmd = new Command(this.client)
-        if (!cmd.name) throw new Error(`Command ${this.directory}${sep}${module}${sep}${file} is missing a name`)
+        if (!cmd || !cmd.name) throw new Error(`Command ${this.directory}${sep}${module}${sep}${file} is missing a name`)
         if (this.commands.get(cmd.name.toLowerCase())) throw new Error(`Command ${cmd.name} already exists`)
         await cmd.aliases.forEach((alias: string) => {
           if (this.aliases.get(alias)) throw new Error(`Alias '${alias}' of '${cmd.name}' already exists`)

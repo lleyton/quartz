@@ -2,6 +2,13 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Embed_1 = __importDefault(require("../structures/Embed"));
 const fs_1 = require("fs");
@@ -93,9 +100,11 @@ class CommandHandler {
             if (files.length <= 0)
                 throw new Error(`No files found in commands folder ${this.directory}${path_1.sep}${module}`);
             await files.forEach(async (file) => {
-                const Command = require(path_1.resolve(`${this.directory}${path_1.sep}${module}${path_1.sep}${file}`));
+                let Command = await Promise.resolve().then(() => __importStar(require(path_1.resolve(`${this.directory}${path_1.sep}${module}${path_1.sep}${file}`))));
+                if (typeof Command !== 'function')
+                    Command = Command.default;
                 const cmd = new Command(this.client);
-                if (!cmd.name)
+                if (!cmd || !cmd.name)
                     throw new Error(`Command ${this.directory}${path_1.sep}${module}${path_1.sep}${file} is missing a name`);
                 if (this.commands.get(cmd.name.toLowerCase()))
                     throw new Error(`Command ${cmd.name} already exists`);

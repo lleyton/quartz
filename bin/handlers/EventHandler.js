@@ -1,4 +1,11 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = require("path");
 const fs_1 = require("fs");
@@ -35,8 +42,12 @@ class EventHandler {
         const files = await fs_1.readdirSync(this.directory).filter((f) => f.endsWith('.js') || f.endsWith('.ts'));
         if (files.length <= 0)
             throw new Error(`No files found in events folder '${this.directory}'`);
-        await files.forEach((file) => {
-            const Event = require(path_1.resolve(`${this.directory}${path_1.sep}${file}`));
+        await files.forEach(async (file) => {
+            console.log(file);
+            let Event = await Promise.resolve().then(() => __importStar(require(path_1.resolve(`${this.directory}${path_1.sep}${file}`))));
+            if (typeof Event !== 'function')
+                Event = Event.default;
+            console.log(Event);
             const evt = new Event(this.client);
             if (!evt)
                 throw new Error(`Event ${this.directory}${path_1.sep}${file} file is empty`);

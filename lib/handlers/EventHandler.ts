@@ -47,8 +47,9 @@ class EventHandler {
   async loadEvents () {
     const files = await readdirSync(this.directory).filter((f: string) => f.endsWith('.js') || f.endsWith('.ts'))
     if (files.length <= 0) throw new Error(`No files found in events folder '${this.directory}'`)
-    await files.forEach((file: string) => {
-      const Event = require(resolve(`${this.directory}${sep}${file}`))
+    await files.forEach(async (file: string) => {
+      let Event = await import(resolve(`${this.directory}${sep}${file}`))
+      if (typeof Event !== 'function') Event = Event.default
       const evt = new Event(this.client)
       if (!evt) throw new Error(`Event ${this.directory}${sep}${file} file is empty`)
       if (!evt.name) throw new Error(`Event ${this.directory}${sep}${file} is missing a name`)
