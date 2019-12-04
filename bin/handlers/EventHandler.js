@@ -43,11 +43,9 @@ class EventHandler {
         if (files.length <= 0)
             throw new Error(`No files found in events folder '${this.directory}'`);
         await files.forEach(async (file) => {
-            console.log(file);
             let Event = await Promise.resolve().then(() => __importStar(require(path_1.resolve(`${this.directory}${path_1.sep}${file}`))));
             if (typeof Event !== 'function')
                 Event = Event.default;
-            console.log(Event);
             const evt = new Event(this.client);
             if (!evt)
                 throw new Error(`Event ${this.directory}${path_1.sep}${file} file is empty`);
