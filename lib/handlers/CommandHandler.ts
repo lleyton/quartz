@@ -234,22 +234,18 @@ class CommandHandler {
     if (!parsedArgs) return
     const channelPermissions = msg.channel.permissionsOf(this.client.user.id)
     if (!channelPermissions.has('sendMessages') || !channelPermissions.has('embedLinks')) return
-    const botPermissions = msg.channel.guild.members.get(this.client.user.id).permission
     if (command.botPermissions) {
       if (typeof command.botPermissions === 'function') {
         const missing = await command.botPermissions(msg)
-        if (missing != null) {
-          return this.quartz.emit('missingPermission', msg, command, missing)
-        }
+        if (missing != null) return this.quartz.emit('missingPermission', msg, command, missing)
       } else if (msg.channel.guild) {
+        const botPermissions = msg.channel.guild.members.get(this.client.user.id).permission
         if (command.botPermissions instanceof Array) {
           for (const p of command.botPermissions) {
             if (!botPermissions.has(p)) return this.quartz.emit('missingPermission', msg, command, p)
           }
         } else {
-          if (!botPermissions.has(command.botPermissions)) {
-            return this.quartz.emit('missingPermission', msg, command, command.botPermissions)
-          }
+          if (!botPermissions.has(command.botPermissions)) return this.quartz.emit('missingPermission', msg, command, command.botPermissions)
         }
       }
     }
