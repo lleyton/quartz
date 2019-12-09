@@ -234,7 +234,7 @@ class CommandHandler {
     if (!parsedArgs) return
     const channelPermissions = msg.channel.permissionsOf(this.client.user.id)
     if (!channelPermissions.has('sendMessages') || !channelPermissions.has('embedLinks')) return
-    const botPermissions = msg.guild.members.get(this.client.user.id).permission
+    const botPermissions = msg.channel.guild.members.get(this.client.user.id).permission
     if (command.botPermissions) {
       if (typeof command.botPermissions === 'function') {
         const missing = await command.botPermissions(msg)
