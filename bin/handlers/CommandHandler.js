@@ -248,28 +248,27 @@ class CommandHandler {
         const parsedArgs = new ArgumentHandler_1.default(this.client, command, args).parse(msg);
         if (!parsedArgs)
             return;
-        const botPermissions = msg.channel.permissionsOf(this.client.user.id);
-        if (!botPermissions.has('sendMessages') || !botPermissions.has('embedLinks'))
+        const channelPermissions = msg.channel.permissionsOf(this.client.user.id);
+        if (!channelPermissions.has('sendMessages') || !channelPermissions.has('embedLinks'))
             return;
+        const botPermissions = msg.guild.members.get(this.client.user.id).permission;
         if (command.botPermissions) {
             if (typeof command.botPermissions === 'function') {
                 const missing = await command.botPermissions(msg);
                 if (missing != null) {
-                    this.quartz.emit('missingPermission', msg, command, missing);
-                    return;
+                    return this.quartz.emit('missingPermission', msg, command, missing);
                 }
             }
             else if (msg.channel.guild) {
                 if (command.botPermissions instanceof Array) {
                     for (const p of command.botPermissions) {
                         if (!botPermissions.has(p))
-                            return msg.embed(`**Missing Permissions:** The bot needs the \`${p}\` permission to run the \`${command.name}\` command.`);
+                            return this.quartz.emit('missingPermission', msg, command, p);
                     }
                 }
                 else {
                     if (!botPermissions.has(command.botPermissions)) {
-                        this.quartz.emit('missingPermission', msg, command, command.botPermissions);
-                        return;
+                        return this.quartz.emit('missingPermission', msg, command, command.botPermissions);
                     }
                 }
             }
