@@ -22,10 +22,10 @@ class UserType {
                 return undefined;
             }
         }
-        if (!msg.channel.guild)
+        if (!msg.member.guild)
             return undefined;
         const search = value.toLowerCase();
-        const members = msg.channel.guild.members.filter(filter(search));
+        const members = msg.member.guild.members.filter(filter(search));
         if (members.length === 0)
             return undefined;
         if (members.length === 1)

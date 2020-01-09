@@ -1,5 +1,5 @@
 declare module 'quartz' {
-  export interface options {
+  export interface ClientOptions {
     owner: string | null,
     eventHandler: {
       directory: string,
@@ -17,14 +17,15 @@ declare module 'quartz' {
     }
   }
 
-  export interface quickEmbed {
+  export interface EmbedOptions {
     reply: boolean,
     bold: boolean,
     color: any,
-    footer: boolean
+    footer: boolean,
+    text: boolean
   }
 
-  export interface cooldown {
+  export interface Cooldown {
     expires: number,
     command: number
   }
@@ -47,7 +48,7 @@ declare module 'quartz' {
     modules: any
     aliases: any
     cooldowns: any
-    constructor (quartz: any, options: options['commandHandler'])  
+    constructor (quartz: any, options: ClientOptions['commandHandler'])  
     quartz(): QuartzClient
     client(): any
     getCommand(commandName: string): Command
@@ -59,14 +60,14 @@ declare module 'quartz' {
     logo(msg: any): any
     color(msg: any): any
     prefix(msg: any): any
-    embed(msg: any, message: string, options: quickEmbed): any
+    embed(msg: any, message: string, options: EmbedOptions): any
   }
 
   export class EventHandler {
     directory: string
     debug: boolean
     events: any
-    constructor (quartz: any, options: options['commandHandler'])  
+    constructor (quartz: any, options: ClientOptions['eventHandler'])  
     quartz(): QuartzClient
     client(): any
     loadEvents(): void
@@ -110,7 +111,7 @@ declare module 'quartz' {
     description?: Description
     botPermissions?: any
     userPermissions?: any
-    cooldown?: cooldown
+    cooldown?: Cooldown
   }
 
   export class Command extends Base {

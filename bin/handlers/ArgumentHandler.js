@@ -1,6 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/** ArgumentHandler Class */
 class ArgumentHandler {
+    /**
+     * Create the argumentHandler
+     * @param {object} client - Eris Client object
+     * @param {object} command - Quartz Command object
+     * @param {array} args - An array of strings as args
+     */
     constructor(client, command, args) {
         this.client = client;
         this.command = command;
@@ -8,6 +15,10 @@ class ArgumentHandler {
         this.string = args.join(' ');
         this.types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float'];
     }
+    /**
+     * Determine if the args is quoted
+     * @return {array} Returns an array of strings with quotes removed
+     */
     quoted() {
         let quoted = this.string.match(/“(?:\.|(\\\“)|[^\“”\n])*”|(?:[^\s"]+|"[^"]*")/g);
         if (quoted && quoted.length > 0) {
@@ -20,6 +31,13 @@ class ArgumentHandler {
         }
         return quoted || undefined;
     }
+    /**
+     * Determine if the args has prompts
+     * @param {object} msg - The eris message object
+     * @param {string} key - The key of the argument
+     * @param {string|function} prompt - String or function of the prompt
+     * @return {void} runs the prompt
+     */
     prompt(msg, key, prompt) {
         if (typeof prompt === 'string') {
             return msg.embed(prompt);
@@ -31,6 +49,12 @@ class ArgumentHandler {
             return msg.embed(`No result for ${key} found.`);
         }
     }
+    /**
+     * Determine if the arg has a default
+     * @param {object} arg - The argument object
+     * @param {object} msg - The key of the argument
+     * @return {string|void} Returns text
+     */
     default(arg, msg) {
         if (!arg.default)
             return undefined;
@@ -44,6 +68,11 @@ class ArgumentHandler {
             return undefined;
         }
     }
+    /**
+     * Run the argument parser
+     * @param {object} msg - The key of the argument
+     * @return {any} Returns result
+     */
     parse(msg) {
         if (this.command.args && this.command.args.length > 0) {
             const parsed = {};
@@ -54,7 +83,6 @@ class ArgumentHandler {
                     const CustomType = require(`../types/${arg.type}`).default;
                     const type = new CustomType(this.client);
                     const defaultValue = this.default(arg, msg);
-                    console.log(defaultValue);
                     if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg).length <= 0)) {
                         prompt = true;
                         return this.prompt(msg, arg.key, arg.prompt);

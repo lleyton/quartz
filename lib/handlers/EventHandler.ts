@@ -1,7 +1,9 @@
 import { sep, resolve } from 'path'
 import { readdirSync } from 'fs'
-import { Collection } from 'eris'
-import { options } from '../QuartzTypes'
+import Eris, { Collection } from 'eris'
+import { ClientOptions } from '../QuartzTypes'
+import QuartzClient from '../QuartzClient'
+import Command from '../structures/Command'
 
 const quartzEvents = ['missingPermission', 'commandRun', 'ratelimited']
 
@@ -17,7 +19,7 @@ class EventHandler {
   debug: boolean
   events: any
 
-  constructor (quartz: any, options: options['eventHandler']) {
+  constructor (quartz: QuartzClient, options: ClientOptions['eventHandler']) {
     if (!options) options = { directory: './commands', debug: false }
     this._quartz = quartz
     this.directory = options.directory
@@ -29,7 +31,7 @@ class EventHandler {
    * Get the quartz client object
    * @return {object} The quartz client object.
    */
-  get quartz () {
+  get quartz (): QuartzClient {
     return this._quartz
   }
 
@@ -37,14 +39,14 @@ class EventHandler {
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  get client () {
+  get client (): Eris.Client {
     return this._quartz.client
   }
 
   /**
    * Load the events from the folder
    */
-  async loadEvents () {
+  async loadEvents (): Promise<void> {
     const files = await readdirSync(this.directory).filter((f: string) => f.endsWith('.js') || f.endsWith('.ts'))
     if (files.length <= 0) throw new Error(`No files found in events folder '${this.directory}'`)
     await files.forEach(async (file: string) => {
@@ -66,12 +68,12 @@ class EventHandler {
    * Runs event
    * @param {object} msg - The message object
    */
-  async _onMessageCreate (msg: any) {
+  async _onMessageCreate (msg: Eris.Message): Promise<void> {
     if (!msg.author || msg.author.bot) return
-    msg.command = false
-    const prefix = await this.client.commandHandler.prefix(msg)
+    msg.command = null
+    const prefix: string | string[] = await this.quartz.commandHandler.prefix(msg)
     const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const content = msg.content.toLowerCase()
+    const content: string = msg.content.toLowerCase()
     if (Array.isArray(prefix)) {
       prefix.forEach(p => escapeRegex(p))
       const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${prefix.join('|')})\\s*`)
@@ -85,9 +87,10 @@ class EventHandler {
     }
     msg.content = msg.content.replace(/<@!/g, '<@')
     if (msg.prefix) {
-      const args = msg.content.substring(msg.prefix.length).split(' ')
-      const label = args.shift().toLowerCase()
-      const command = await this.client.commandHandler.getCommand(label)
+      const args: string[] = msg.content.substring(msg.prefix.length).split(' ')
+      const label: string = args.shift().toLowerCase()
+      const command: Command = await this.quartz.commandHandler.getCommand(label)
+      // @ts-ignore
       if (command) msg.command = command
     }
     const event = this.events.get('messageCreate')

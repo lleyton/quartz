@@ -1,4 +1,4 @@
-export interface options {
+export interface ClientOptions {
   owner: string | null,
   eventHandler: {
     directory: string,
@@ -16,14 +16,15 @@ export interface options {
   }
 }
 
-export interface quickEmbed {
+export interface EmbedOptions {
   reply: boolean,
   bold: boolean,
   color: any,
-  footer: boolean
+  footer: boolean,
+  text: boolean
 }
 
-export interface cooldown {
+export interface Cooldown {
   expires: number,
   command: number
 }

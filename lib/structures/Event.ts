@@ -1,5 +1,4 @@
 import Base from './Base'
-
 /** Event Class */
 class Event extends Base {
   /**
@@ -31,7 +30,7 @@ class Event extends Base {
   /**
    * Run when command called
    */
-  public run () {
+  public run (): Promise<void> {
     throw new Error(`${this.constructor.name}#run has not been implemented`)
   }
 }

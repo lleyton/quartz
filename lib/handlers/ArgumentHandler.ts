@@ -1,13 +1,28 @@
-import { type } from "os"
-import { Message } from "eris"
+import Eris from 'eris'
+import Command from '../structures/Command'
 
+interface Argument {
+  key?: string
+  type?: string
+  prompt?: string | ((msg: any) => void)
+  default?: string | ((msg: any) => void)
+}
+
+/** ArgumentHandler Class */
 class ArgumentHandler {
   private client: any
   private command: any
   private args: string[]
   private string: any
   private types: string[]
-  constructor (client: any, command: any, args: string[]) {
+
+  /**
+   * Create the argumentHandler
+   * @param {object} client - Eris Client object
+   * @param {object} command - Quartz Command object
+   * @param {array} args - An array of strings as args
+   */
+  constructor (client: Eris.Client, command: Command, args: string[]) {
     this.client = client
     this.command = command
     this.args = args
@@ -15,7 +30,11 @@ class ArgumentHandler {
     this.types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float']
   }
 
-  private quoted (): any {
+  /**
+   * Determine if the args is quoted
+   * @return {array} Returns an array of strings with quotes removed
+   */
+  private quoted (): string[] {
     let quoted = this.string.match(/“(?:\.|(\\\“)|[^\“”\n])*”|(?:[^\s"]+|"[^"]*")/g)
     if (quoted && quoted.length > 0) {
       quoted = quoted.map((q: string) => {
@@ -26,7 +45,14 @@ class ArgumentHandler {
     return quoted || undefined
   }
 
-  prompt (msg: any, key: string, prompt: string | any) {
+  /**
+   * Determine if the args has prompts
+   * @param {object} msg - The eris message object
+   * @param {string} key - The key of the argument
+   * @param {string|function} prompt - String or function of the prompt
+   * @return {void} runs the prompt
+   */
+  prompt (msg: Eris.Message, key: string, prompt: string | Function): Promise<Eris.Message> | void {
     if (typeof prompt === 'string') {
       return msg.embed(prompt)
     } else if (typeof prompt === 'function') {
@@ -36,7 +62,13 @@ class ArgumentHandler {
     }
   }
 
-  default (arg: any, msg: any) {
+  /**
+   * Determine if the arg has a default
+   * @param {object} arg - The argument object
+   * @param {object} msg - The key of the argument
+   * @return {string|void} Returns text
+   */
+  default (arg: Argument, msg: Eris.Message): string | void {
     if (!arg.default) return undefined
     if (typeof arg.default === 'string') {
       return arg.default
@@ -47,17 +79,21 @@ class ArgumentHandler {
     }
   }
 
-  parse (msg: any): any  {
+  /**
+   * Run the argument parser
+   * @param {object} msg - The key of the argument
+   * @return {any} Returns result
+   */
+  parse (msg: Eris.Message): { [key: string]: Argument } | string[]  {
     if (this.command.args && this.command.args.length > 0) {
       const parsed: any = {}
       const args = this.quoted()
       let prompt = false
-      this.command.args.forEach((arg: any) => {
+      this.command.args.forEach((arg: Argument) => {
         if (arg.key && arg.type && this.types.includes(arg.type)) {
           const CustomType = require(`../types/${arg.type}`).default
           const type = new CustomType(this.client)
           const defaultValue = this.default(arg, msg)
-          console.log(defaultValue)
           if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg).length <= 0)) {
             prompt = true
             return this.prompt(msg, arg.key, arg.prompt)

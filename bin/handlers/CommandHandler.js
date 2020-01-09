@@ -18,6 +18,11 @@ const ArgumentHandler_1 = __importDefault(require("./ArgumentHandler"));
 const types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float'];
 /** CommandHandler Class */
 class CommandHandler {
+    /**
+     * Create the commandHandler
+     * @param {object} quartz - QuartzClient object
+     * @param {object} options - commandHandler options
+     */
     constructor(quartz, options) {
         if (!options)
             options = { directory: './commands', prefix: '!', debug: false, defaultCooldown: 1000, settings: null, text: 'Quartz', logo: '', color: 0xFFFFFF };
@@ -84,15 +89,14 @@ class CommandHandler {
      * Get the modules from the command folder
      * @return {array} The modules in the command folder
      */
-    async loadModules() {
-        const rd = await fs_1.readdirSync(this.directory).filter(f => fs_1.statSync(path_1.join(this.directory, f)).isDirectory());
-        return rd;
+    loadModules() {
+        return fs_1.readdirSync(this.directory).filter(f => fs_1.statSync(path_1.join(this.directory, f)).isDirectory());
     }
     /**
      * Load the commands from the folder
      */
     async loadCommands() {
-        const modules = await this.loadModules();
+        const modules = this.loadModules();
         if (modules.length <= 0)
             throw new Error(`No category folders found in ${this.directory}`);
         await modules.forEach(async (module) => {
@@ -185,15 +189,16 @@ class CommandHandler {
     async embed(msg, message, options) {
         const generateEmbed = new Embed_1.default();
         if (!options)
-            options = { reply: false, bold: false, color: null, footer: false };
+            options = { reply: false, bold: false, color: null, footer: false, text: false };
         if (options.reply && !options.bold)
-            generateEmbed.setDescription(`<@${msg.author.id}>, ${message}`);
+            message = `<@${msg.author.id}>, ${message}`;
         else if (options.bold && !options.reply)
-            generateEmbed.setDescription(`**${message}**`);
+            message = `**${message}**`;
         else if (options.bold && options.reply)
-            generateEmbed.setDescription(`**<@${msg.author.id}>, ${message}**`);
-        else
-            generateEmbed.setDescription(message);
+            message = `**<@${msg.author.id}>, ${message}**`;
+        if (options.text)
+            return msg.channel.createMessage(message);
+        generateEmbed.setDescription(message);
         if (options.color)
             generateEmbed.setColor(options.color);
         else
@@ -207,7 +212,8 @@ class CommandHandler {
      * @param {object} msg - The message object
      */
     async _onMessageCreate(msg) {
-        if (!msg.author || msg.author.bot || !msg.channel.guild)
+        var _a, _b, _c, _d, _e, _f, _g;
+        if (!msg.author || msg.author.bot || !((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild))
             return;
         const prefix = await this.prefix(msg);
         const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -239,6 +245,7 @@ class CommandHandler {
         const command = this.getCommand(label);
         if (!command)
             return;
+        // @ts-ignore
         msg.command = command;
         msg.color = this.color.bind(this, msg);
         msg.logo = this.logo.bind(this, msg);
@@ -248,18 +255,18 @@ class CommandHandler {
         const parsedArgs = new ArgumentHandler_1.default(this.client, command, args).parse(msg);
         if (!parsedArgs)
             return;
+        // @ts-ignore
         const channelPermissions = msg.channel.permissionsOf(this.client.user.id);
         if (!channelPermissions.has('sendMessages') || !channelPermissions.has('embedLinks'))
             return;
-        const botPermissions = msg.channel.guild.members.get(this.client.user.id).permission;
         if (command.botPermissions) {
             if (typeof command.botPermissions === 'function') {
                 const missing = await command.botPermissions(msg);
-                if (missing != null) {
+                if (missing != null)
                     return this.quartz.emit('missingPermission', msg, command, missing);
-                }
             }
-            else if (msg.channel.guild) {
+            else if ((_b = msg.member) === null || _b === void 0 ? void 0 : _b.guild) {
+                const botPermissions = (_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild.members.get(this.client.user.id).permission;
                 if (command.botPermissions instanceof Array) {
                     for (const p of command.botPermissions) {
                         if (!botPermissions.has(p))
@@ -267,9 +274,8 @@ class CommandHandler {
                     }
                 }
                 else {
-                    if (!botPermissions.has(command.botPermissions)) {
+                    if (!botPermissions.has(command.botPermissions))
                         return this.quartz.emit('missingPermission', msg, command, command.botPermissions);
-                    }
                 }
             }
         }
@@ -279,6 +285,7 @@ class CommandHandler {
                 if (new Date(checkCooldown.expires) < new Date()) {
                     this.cooldowns.delete(msg.author.id);
                     this.cooldowns.set(msg.author.id, { expires: Date.now() + command.cooldown.expires, notified: false, command: 1 });
+                    // @ts-ignore
                 }
                 else if (!checkCooldown.notified && checkCooldown.command >= msg.command.cooldown.command) {
                     checkCooldown.notified = true;
@@ -289,17 +296,19 @@ class CommandHandler {
                     return this.quartz.emit('ratelimited', msg, command, false, checkCooldown.expires);
                 }
                 else {
+                    // @ts-ignore
                     this.cooldowns.set(msg.author.id, { expires: Date.now() + msg.command.cooldown.expires, notified: false, command: ++checkCooldown.command });
                 }
             }
             else {
+                // @ts-ignore
                 this.cooldowns.set(msg.author.id, { expires: Date.now() + msg.command.cooldown.expires, notified: false, command: 1 });
             }
         }
-        if (command.guildOnly && !msg.channel.guild)
+        if (command.guildOnly && !((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild))
             return;
-        if (msg.channel.guild)
-            msg.guild = msg.channel.guild;
+        if ((_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild)
+            msg.guild = (_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild;
         if (command.ownerOnly && msg.author.id !== this.quartz.owner)
             return;
         if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this.quartz.owner)
@@ -312,7 +321,7 @@ class CommandHandler {
                     return;
                 }
             }
-            else if (msg.channel.guild) {
+            else if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild) {
                 const perm = msg.member.permission.has(command.userPermissions);
                 if (!perm) {
                     this.quartz.emit('missingPermission', msg, command, command.userPermissions);
@@ -320,6 +329,7 @@ class CommandHandler {
                 }
             }
         }
+        // @ts-ignore
         await command.run(msg, parsedArgs || args)
             .then(() => {
             return this.quartz.emit('commandRun', msg, command);

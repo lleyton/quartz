@@ -6,7 +6,7 @@ class LogHandler {
    * Send warning to console
    * @param {string} message - The warning message
    */
-  public warn (...message: any[]) {
+  public warn (...message: string[]): void {
     console.log(COLOR.yellow('[WARNING]'))
     console.warn(...message)
   }
@@ -15,7 +15,7 @@ class LogHandler {
    * Send error to console
    * @param {string} message - The error message
    */
-  public error (...message: any[]) {
+  public error (...message: string[]): void {
     console.log(COLOR.red('[ERROR]'))
     console.log(...message)
     console.trace()
@@ -25,7 +25,7 @@ class LogHandler {
    * Send info to console
    * @param {string} message - The info message
    */
-  public info (...message: any[]) {
+  public info (...message: string[]): void {
     console.log(COLOR.hex('#7289DA')('[Points]: ') + COLOR.yellow(...message))
   }
 
@@ -33,7 +33,7 @@ class LogHandler {
    * Send console to console
    * @param {string} message - The console message
    */
-  public console (...message: any[]) {
+  public console (...message: string[]): void {
     console.log(...message)
   }
 }

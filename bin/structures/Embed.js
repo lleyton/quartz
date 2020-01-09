@@ -9,9 +9,9 @@ class Embed {
     }
     /**
      * Author for the embed
-     * @param {string} name - Name of user
-     * @param {string} icon - Icon of user
-     * @param {string} url - A url
+     * @param {string} name - The username displayed in the embed header
+     * @param {string} icon - The icon displayed in the embed header
+     * @param {string} url - The url displayed in the embed header
      */
     setAuthor(name, icon, url) {
         this.author = { name, icon_url: icon, url };
@@ -19,15 +19,21 @@ class Embed {
     }
     /**
      * Color for the embed
-     * @param {string} color - A color
+     * @param {string} color - A color hex that is a string or a number
      */
     setColor(color) {
+        if (typeof color === 'string')
+            color = parseInt(color.replace('#', ''), 16);
+        if (color < 0 || color > 0xFFFFFF)
+            throw new RangeError('Color range is invaild.');
+        else if (color && isNaN(color))
+            throw new TypeError('Unable to convert color.');
         this.color = color;
         return this;
     }
     /**
      * Description for the embed
-     * @param {string} desc - A description
+     * @param {string} desc - Set the description field of the embed
      */
     setDescription(desc) {
         this.description = desc.toString().substring(0, 2048);

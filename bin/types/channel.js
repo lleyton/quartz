@@ -8,12 +8,13 @@ class ChannelType {
         this.client = client;
     }
     parse(value, msg) {
-        if (!value || value.length <= 0 || !msg || !msg.channel.guild || typeof value !== 'string')
+        var _a, _b, _c;
+        if (!value || value.length <= 0 || !msg || !((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild) || typeof value !== 'string')
             return undefined;
         const match = value.match(/^(?:<#)?([0-9]+)>?$/);
         if (match) {
             try {
-                const channel = msg.channel.guild.channels.get(match[1]);
+                const channel = (_b = msg.member) === null || _b === void 0 ? void 0 : _b.guild.channels.get(match[1]);
                 if (!channel)
                     return undefined;
                 return channel;
@@ -23,7 +24,7 @@ class ChannelType {
             }
         }
         const search = value.toLowerCase();
-        const channels = msg.channel.guild.channels.filter(filter(search));
+        const channels = (_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild.channels.filter(filter(search));
         if (channels.length === 0)
             return undefined;
         if (channels.length === 1)

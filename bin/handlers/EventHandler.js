@@ -71,8 +71,8 @@ class EventHandler {
     async _onMessageCreate(msg) {
         if (!msg.author || msg.author.bot)
             return;
-        msg.command = false;
-        const prefix = await this.client.commandHandler.prefix(msg);
+        msg.command = null;
+        const prefix = await this.quartz.commandHandler.prefix(msg);
         const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const content = msg.content.toLowerCase();
         if (Array.isArray(prefix)) {
@@ -93,7 +93,8 @@ class EventHandler {
         if (msg.prefix) {
             const args = msg.content.substring(msg.prefix.length).split(' ');
             const label = args.shift().toLowerCase();
-            const command = await this.client.commandHandler.getCommand(label);
+            const command = await this.quartz.commandHandler.getCommand(label);
+            // @ts-ignore
             if (command)
                 msg.command = command;
         }

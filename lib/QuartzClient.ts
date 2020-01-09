@@ -4,7 +4,7 @@ import EventHandler from './handlers/EventHandler'
 import CommandHandler from './handlers/CommandHandler'
 import Embed from './structures/Embed'
 
-import { options } from './QuartzTypes'
+import { ClientOptions } from './QuartzTypes'
 
 /** QuartzClient Class */
 class QuartzClient extends EventEmitter {
@@ -19,7 +19,7 @@ class QuartzClient extends EventEmitter {
   eventHandler: any
   commandHandler: any
 
-  constructor (options: options, eris: any) {
+  constructor (options: ClientOptions, eris: any) {
     super()
     if (!options) options = { owner: null, eventHandler: null, commandHandler: null }
     this._client = eris

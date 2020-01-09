@@ -1,19 +1,21 @@
+import Eris from 'eris'
+
 const filter = (search: string) => {
-  return (channel: any) => channel.name.toLowerCase() === search
+  return (channel: Eris.TextChannel) => channel.name.toLowerCase() === search
 }
 
 class ChannelType {
-  client: any
-  constructor (client: any) {
+  client: Eris.Client
+  constructor (client: Eris.Client) {
     this.client = client
   }
 
-  parse (value: string, msg: any) {
-    if (!value || value.length <= 0 || !msg || !msg.channel.guild || typeof value !== 'string') return undefined
+  parse (value: string, msg: Eris.Message) {
+    if (!value || value.length <= 0 || !msg || !msg.member?.guild || typeof value !== 'string') return undefined
     const match = value.match(/^(?:<#)?([0-9]+)>?$/)
     if (match) {
       try {
-        const channel = msg.channel.guild.channels.get(match[1])
+        const channel = msg.member?.guild.channels.get(match[1])
         if (!channel) return undefined
         return channel
       } catch (error) {
@@ -21,7 +23,7 @@ class ChannelType {
       }
     }
     const search = value.toLowerCase()
-    const channels = msg.channel.guild.channels.filter(filter(search))
+    const channels = msg.member?.guild.channels.filter(filter(search))
     if (channels.length === 0) return undefined
     if (channels.length === 1) return channels[0]
     if (channels.length > 1) {

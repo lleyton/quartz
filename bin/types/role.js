@@ -8,12 +8,13 @@ class RoleType {
         this.client = client;
     }
     parse(value, msg) {
-        if (!value || value.length <= 0 || !msg || !msg.channel.guild || typeof value !== 'string')
+        var _a, _b, _c;
+        if (!value || value.length <= 0 || !msg || !((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild) || typeof value !== 'string')
             return undefined;
         const match = value.match(/^(?:<@&)?([0-9]+)>?$/);
         if (match) {
             try {
-                const user = msg.channel.guild.roles.get(match[1]);
+                const user = (_b = msg.member) === null || _b === void 0 ? void 0 : _b.guild.roles.get(match[1]);
                 if (!user)
                     return undefined;
                 return user;
@@ -23,7 +24,7 @@ class RoleType {
             }
         }
         const search = value.toLowerCase();
-        const roles = msg.channel.guild.roles.filter(filter(search));
+        const roles = (_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild.roles.filter(filter(search));
         if (roles.length === 0)
             return undefined;
         if (roles.length === 1)

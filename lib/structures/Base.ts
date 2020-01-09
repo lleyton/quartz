@@ -1,3 +1,6 @@
+import Eris from 'eris'
+import QuartzClient from '../QuartzClient'
+import LogHandler from '../handlers/LogHandler'
 
 /** Base Class */
 class Base {
@@ -5,9 +8,9 @@ class Base {
    * Create the eventHandler
    * @param {object} quartzClient - QuartzClient object
    */
-  private _quartz: any
+  private _quartz: QuartzClient
 
-  constructor (quartzClient: any) {
+  constructor (quartzClient: QuartzClient) {
     this._quartz = quartzClient
   }
 
@@ -15,7 +18,7 @@ class Base {
    * Get the quartz client object
    * @return {object} The quartz client object.
    */
-  public get quartz () {
+  public get quartz (): QuartzClient {
     return this._quartz
   }
 
@@ -23,7 +26,7 @@ class Base {
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  public get client () {
+  public get client (): Eris.Client {
     return this._quartz.client
   }
 
@@ -31,7 +34,7 @@ class Base {
    * Get the logger object
    * @return {object} The logger object.
    */
-  public get logger () {
+  public get logger (): LogHandler {
     return this._quartz.logger
   }
 }
