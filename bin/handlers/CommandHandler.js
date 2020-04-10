@@ -15,7 +15,7 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 const eris_1 = require("eris");
 const ArgumentHandler_1 = __importDefault(require("./ArgumentHandler"));
-const types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float'];
+const util_1 = __importDefault(require("util"));
 /** CommandHandler Class */
 class CommandHandler {
     /**
@@ -31,14 +31,14 @@ class CommandHandler {
         this.debug = options.debug || false;
         this._prefix = options.prefix || '!';
         this.defaultCooldown = options.defaultCooldown || 10000;
-        this.commands = new eris_1.Collection(null);
-        this.modules = new eris_1.Collection(null);
-        this.aliases = new eris_1.Collection(null);
-        this.cooldowns = new eris_1.Collection(null);
+        this.commands = new eris_1.Collection(undefined);
+        this.modules = new eris_1.Collection(undefined);
+        this.aliases = new eris_1.Collection(undefined);
+        this.cooldowns = new eris_1.Collection(undefined);
         this._settings = options.settings || undefined;
-        this._text = options.text || 'Quartz';
-        this._logo = options.logo || '';
-        this._color = options.color || 0xFFFFFF;
+        this._text = options.text || client.user.username;
+        this._logo = options.logo || client.user.avatarURL;
+        this._color = options.color || undefined;
     }
     /**
      * Get the eris client object
@@ -89,34 +89,39 @@ class CommandHandler {
      * Load the commands from the folder
      */
     async loadCommands() {
-        const modules = this.loadModules();
-        if (modules.length <= 0)
-            throw new Error(`No category folders found in ${this.directory}`);
-        await modules.forEach(async (module) => {
-            const files = await fs_1.readdirSync(`${this.directory}${path_1.sep}${module}`).filter(f => f.endsWith('.js') || f.endsWith('.ts'));
-            if (files.length <= 0)
-                throw new Error(`No files found in commands folder ${this.directory}${path_1.sep}${module}`);
-            await files.forEach(async (file) => {
-                let Command = await Promise.resolve().then(() => __importStar(require(path_1.resolve(`${this.directory}${path_1.sep}${module}${path_1.sep}${file}`))));
-                if (typeof Command !== 'function')
-                    Command = Command.default;
-                const cmd = new Command(this.client);
-                if (!cmd || !cmd.name)
-                    throw new Error(`Command ${this.directory}${path_1.sep}${module}${path_1.sep}${file} is missing a name`);
-                if (this.commands.get(cmd.name.toLowerCase()))
-                    throw new Error(`Command ${cmd.name} already exists`);
-                await cmd.aliases.forEach((alias) => {
-                    if (this.aliases.get(alias))
-                        throw new Error(`Alias '${alias}' of '${cmd.name}' already exists`);
+        try {
+            const modules = this.loadModules();
+            if (modules.length <= 0)
+                throw new Error(`No category folders found in ${this.directory}`);
+            await modules.forEach(async (module) => {
+                const files = await fs_1.readdirSync(`${this.directory}${path_1.sep}${module}`).filter(f => f.endsWith('.js') || f.endsWith('.ts'));
+                if (files.length <= 0)
+                    throw new Error(`No files found in commands folder ${this.directory}${path_1.sep}${module}`);
+                await files.forEach(async (file) => {
+                    let Command = await Promise.resolve().then(() => __importStar(require(path_1.resolve(`${this.directory}${path_1.sep}${module}${path_1.sep}${file}`))));
+                    if (typeof Command !== 'function')
+                        Command = Command.default;
+                    const cmd = new Command(this.client);
+                    if (!cmd || !cmd.name)
+                        throw new Error(`Command ${this.directory}${path_1.sep}${module}${path_1.sep}${file} is missing a name`);
+                    if (this.commands.get(cmd.name.toLowerCase()))
+                        throw new Error(`Command ${cmd.name} already exists`);
+                    await cmd.aliases.forEach((alias) => {
+                        if (this.aliases.get(alias))
+                            throw new Error(`Alias '${alias}' of '${cmd.name}' already exists`);
+                    });
+                    this.commands.set(cmd.name.toLowerCase(), cmd);
+                    this.modules.set(cmd.name, module);
+                    if (this.debug)
+                        this._client.logger.info(`Loading command ${cmd.name} from ${module}`);
+                    if (cmd.aliases && cmd.aliases.length > 0)
+                        await cmd.aliases.forEach((alias) => this.aliases.set(alias, cmd.name));
                 });
-                this.commands.set(cmd.name.toLowerCase(), cmd);
-                this.modules.set(cmd.name, module);
-                if (this.debug)
-                    this._client.logger.info(`Loading command ${cmd.name} from ${module}`);
-                if (cmd.aliases && cmd.aliases.length > 0)
-                    await cmd.aliases.forEach((alias) => this.aliases.set(alias, cmd.name));
             });
-        });
+        }
+        catch (error) {
+            throw new Error(error);
+        }
     }
     /**
      * Get server settings
@@ -124,8 +129,16 @@ class CommandHandler {
      * @return {object} The settings object
      */
     settings(msg) {
-        if (typeof this._settings !== 'function')
+        if (typeof this._settings !== 'function') {
+            if (util_1.default.types.isAsyncFunction(this._settings)) {
+                return this._settings
+                    .then((settings) => settings)
+                    .catch((error) => {
+                    throw new Error(error.message);
+                });
+            }
             return this._settings;
+        }
         else
             return this._settings(msg);
     }
@@ -315,10 +328,17 @@ class CommandHandler {
                 }
             }
             else if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild) {
-                const perm = msg.member.permission.has(command.userPermissions);
-                if (!perm) {
-                    this._client.emit('missingPermission', msg, command, command.userPermissions);
-                    return;
+                if (Array.isArray(command.userPermissions)) {
+                    command.userPermissions.forEach((userPermission) => {
+                        const permission = msg.member.permission.has(userPermission);
+                        if (!permission)
+                            return this._client.emit('missingPermission', msg, command, userPermission);
+                    });
+                }
+                else {
+                    const permission = msg.member.permission.has(command.userPermissions);
+                    if (!permission)
+                        return this._client.emit('missingPermission', msg, command, command.userPermissions);
                 }
             }
         }

@@ -1,4 +1,11 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /** ArgumentHandler Class */
 class ArgumentHandler {
@@ -13,7 +20,7 @@ class ArgumentHandler {
         this.command = command;
         this.args = args;
         this.string = args.join(' ');
-        this.types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float'];
+        this.types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float', 'member'];
     }
     /**
      * Determine if the args is quoted
@@ -78,9 +85,9 @@ class ArgumentHandler {
             const parsed = {};
             const args = this.quoted();
             let prompt = false;
-            this.command.args.forEach((arg) => {
+            Promise.all(this.command.args.forEach(async (arg) => {
                 if (arg.key && arg.type && this.types.includes(arg.type)) {
-                    const CustomType = require(`../types/${arg.type}`).default;
+                    const CustomType = await Promise.resolve().then(() => __importStar(require(`../types/${arg.type}`)));
                     const type = new CustomType(this.client);
                     const defaultValue = this.default(arg, msg);
                     if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg).length <= 0)) {
@@ -117,7 +124,7 @@ class ArgumentHandler {
                         parsed[arg.key] = result;
                     }
                 }
-            });
+            }));
             if (prompt)
                 return undefined;
             return parsed || this.args;

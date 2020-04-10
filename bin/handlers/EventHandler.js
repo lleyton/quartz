@@ -53,6 +53,8 @@ class EventHandler {
                 this._client.on(evt.name, evt.run.bind(this));
             else if (evt.name === 'messageCreate')
                 this.client.on(evt.name, this._onMessageCreate.bind(this));
+            else if (evt.name === 'ready')
+                this.client.once(evt.name, evt.run.bind(this));
             else
                 this.client.on(evt.name, evt.run.bind(this));
         });
