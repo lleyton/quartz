@@ -2,11 +2,11 @@ import Eris from 'eris'
 
 declare module 'quartz' {
   export interface Message extends Eris.Message {
-    guild: Eris.Guild,
-    settings(): any,
-    color(): any,
-    text(): any,
-    logo(): any
+    guild?: Eris.Guild,
+    settings?(): any,
+    color?(): any,
+    text?(): any,
+    logo?(): any
   }
 
   export interface ClientOptions {
