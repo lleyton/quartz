@@ -17,7 +17,7 @@ Client Example:
 import { Client } from 'quartz'
 import { resolve } from 'path'
 
-const client = new QuartzClient('TOKEN', {
+const client = new Client('TOKEN', {
   owner: 'ownerID',
   eventHandler: {
     directory: resolve('./events')
