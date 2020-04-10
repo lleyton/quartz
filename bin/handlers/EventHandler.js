@@ -13,27 +13,20 @@ const eris_1 = require("eris");
 const quartzEvents = ['missingPermission', 'commandRun', 'ratelimited'];
 /** EventHandler Class */
 class EventHandler {
-    constructor(quartz, options) {
+    constructor(client, options) {
         if (!options)
             options = { directory: './commands', debug: false };
-        this._quartz = quartz;
+        this._client = client;
         this.directory = options.directory;
         this.debug = options.debug;
         this.events = new eris_1.Collection(null);
-    }
-    /**
-     * Get the quartz client object
-     * @return {object} The quartz client object.
-     */
-    get quartz() {
-        return this._quartz;
     }
     /**
      * Get the eris client object
      * @return {object} The eris client object.
      */
     get client() {
-        return this._quartz.client;
+        return this._client;
     }
     /**
      * Load the events from the folder
@@ -55,9 +48,9 @@ class EventHandler {
                 throw new Error(`Event ${this.directory}${path_1.sep}${file} already exists`);
             this.events.set(evt.name, evt);
             if (this.debug)
-                this.quartz.logger.info(`Loading event ${evt.name}`);
+                this._client.logger.info(`Loading event ${evt.name}`);
             if (quartzEvents.includes(evt.name))
-                this.quartz.on(evt.name, evt.run.bind(this));
+                this._client.on(evt.name, evt.run.bind(this));
             else if (evt.name === 'messageCreate')
                 this.client.on(evt.name, this._onMessageCreate.bind(this));
             else
@@ -72,7 +65,7 @@ class EventHandler {
         if (!msg.author || msg.author.bot)
             return;
         msg.command = null;
-        const prefix = await this.quartz.commandHandler.prefix(msg);
+        const prefix = await this._client.commandHandler.prefix(msg);
         const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const content = msg.content.toLowerCase();
         if (Array.isArray(prefix)) {
@@ -93,7 +86,7 @@ class EventHandler {
         if (msg.prefix) {
             const args = msg.content.substring(msg.prefix.length).split(' ');
             const label = args.shift().toLowerCase();
-            const command = await this.quartz.commandHandler.getCommand(label);
+            const command = await this._client.commandHandler.getCommand(label);
             // @ts-ignore
             if (command)
                 msg.command = command;

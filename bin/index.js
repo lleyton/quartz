@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("source-map-support/register");
 const QuartzClient_1 = __importDefault(require("./QuartzClient"));
-exports.QuartzClient = QuartzClient_1.default;
+exports.Client = QuartzClient_1.default;
 const Base_1 = __importDefault(require("./structures/Base"));
 exports.Base = Base_1.default;
 const Command_1 = __importDefault(require("./structures/Command"));

@@ -10,14 +10,6 @@ class Event extends Base_1.default {
         super(client);
         const { name = '' } = options;
         this.name = name;
-        this._client = client;
-    }
-    /**
-     * Get the eris client object
-     * @return {object} The eris client object.
-     */
-    get client() {
-        return this._client;
     }
     /**
      * Run when command called

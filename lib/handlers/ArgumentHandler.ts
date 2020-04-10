@@ -1,5 +1,6 @@
 import Eris from 'eris'
 import Command from '../structures/Command'
+import { Message } from '../QuartzTypes'
 
 interface Argument {
   key?: string
@@ -52,7 +53,7 @@ class ArgumentHandler {
    * @param {string|function} prompt - String or function of the prompt
    * @return {void} runs the prompt
    */
-  prompt (msg: Eris.Message, key: string, prompt: string | Function): Promise<Eris.Message> | void {
+  prompt (msg: Message, key: string, prompt: string | Function): Promise<Message> | void {
     if (typeof prompt === 'string') {
       return msg.embed(prompt)
     } else if (typeof prompt === 'function') {
@@ -68,7 +69,7 @@ class ArgumentHandler {
    * @param {object} msg - The key of the argument
    * @return {string|void} Returns text
    */
-  default (arg: Argument, msg: Eris.Message): string | void {
+  default (arg: Argument, msg: Message): string | void {
     if (!arg.default) return undefined
     if (typeof arg.default === 'string') {
       return arg.default
@@ -84,7 +85,7 @@ class ArgumentHandler {
    * @param {object} msg - The key of the argument
    * @return {any} Returns result
    */
-  parse (msg: Eris.Message): { [key: string]: Argument } | string[]  {
+  parse (msg: Message): { [key: string]: Argument } | string[]  {
     if (this.command.args && this.command.args.length > 0) {
       const parsed: any = {}
       const args = this.quoted()

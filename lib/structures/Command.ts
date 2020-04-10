@@ -1,5 +1,6 @@
 import Base from './Base'
 import { Cooldown } from '../QuartzTypes'
+import { Client } from '..'
 
 interface Argument {
   key?: string
@@ -15,7 +16,6 @@ class Command extends Base {
    * @param {object} client - Client object
    * @param {object} options - Options object
    */
-  private _client: any
   name: string
   aliases: string[]
   args: Argument[]
@@ -28,7 +28,7 @@ class Command extends Base {
   userPermissions: any
   cooldown: Cooldown
 
-  constructor (client: any, options = {}) {
+  constructor (client: Client, options = {}) {
     super(client)
     const {
       name = '',
@@ -58,15 +58,6 @@ class Command extends Base {
     this.cooldown = cooldown
     this.botPermissions = typeof botPermissions === 'function' ? botPermissions.bind(this) : botPermissions
     this.userPermissions = typeof userPermissions === 'function' ? userPermissions.bind(this) : userPermissions
-    this._client = client
-  }
-
-  /**
-   * Get the eris client object
-   * @return {object} The eris client object.
-   */
-  public get client () {
-    return this._client
   }
 
   /**

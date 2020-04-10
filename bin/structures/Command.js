@@ -23,14 +23,6 @@ class Command extends Base_1.default {
         this.cooldown = cooldown;
         this.botPermissions = typeof botPermissions === 'function' ? botPermissions.bind(this) : botPermissions;
         this.userPermissions = typeof userPermissions === 'function' ? userPermissions.bind(this) : userPermissions;
-        this._client = client;
-    }
-    /**
-     * Get the eris client object
-     * @return {object} The eris client object.
-     */
-    get client() {
-        return this._client;
     }
     /**
      * Run when command called

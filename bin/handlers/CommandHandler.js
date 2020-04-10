@@ -23,10 +23,10 @@ class CommandHandler {
      * @param {object} quartz - QuartzClient object
      * @param {object} options - commandHandler options
      */
-    constructor(quartz, options) {
+    constructor(client, options) {
         if (!options)
             options = { directory: './commands', prefix: '!', debug: false, defaultCooldown: 1000, settings: null, text: 'Quartz', logo: '', color: 0xFFFFFF };
-        this._quartz = quartz;
+        this._client = client;
         this.directory = options.directory || './commands';
         this.debug = options.debug || false;
         this._prefix = options.prefix || '!';
@@ -41,18 +41,11 @@ class CommandHandler {
         this._color = options.color || 0xFFFFFF;
     }
     /**
-     * Get the quartz client object
-     * @return {object} The quartz client object.
-     */
-    get quartz() {
-        return this._quartz;
-    }
-    /**
      * Get the eris client object
      * @return {object} The eris client object.
      */
     get client() {
-        return this._quartz.client;
+        return this._client;
     }
     /**
      * Get command by name
@@ -119,7 +112,7 @@ class CommandHandler {
                 this.commands.set(cmd.name.toLowerCase(), cmd);
                 this.modules.set(cmd.name, module);
                 if (this.debug)
-                    this.quartz.logger.info(`Loading command ${cmd.name} from ${module}`);
+                    this._client.logger.info(`Loading command ${cmd.name} from ${module}`);
                 if (cmd.aliases && cmd.aliases.length > 0)
                     await cmd.aliases.forEach((alias) => this.aliases.set(alias, cmd.name));
             });
@@ -263,19 +256,19 @@ class CommandHandler {
             if (typeof command.botPermissions === 'function') {
                 const missing = await command.botPermissions(msg);
                 if (missing != null)
-                    return this.quartz.emit('missingPermission', msg, command, missing);
+                    return this._client.emit('missingPermission', msg, command, missing);
             }
             else if ((_b = msg.member) === null || _b === void 0 ? void 0 : _b.guild) {
                 const botPermissions = (_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild.members.get(this.client.user.id).permission;
                 if (command.botPermissions instanceof Array) {
                     for (const p of command.botPermissions) {
                         if (!botPermissions.has(p))
-                            return this.quartz.emit('missingPermission', msg, command, p);
+                            return this._client.emit('missingPermission', msg, command, p);
                     }
                 }
                 else {
                     if (!botPermissions.has(command.botPermissions))
-                        return this.quartz.emit('missingPermission', msg, command, command.botPermissions);
+                        return this._client.emit('missingPermission', msg, command, command.botPermissions);
                 }
             }
         }
@@ -290,10 +283,10 @@ class CommandHandler {
                 else if (!checkCooldown.notified && checkCooldown.command >= msg.command.cooldown.command) {
                     checkCooldown.notified = true;
                     this.cooldowns.set(msg.author.id, checkCooldown);
-                    return this.quartz.emit('ratelimited', msg, command, true, checkCooldown.expires);
+                    return this._client.emit('ratelimited', msg, command, true, checkCooldown.expires);
                 }
                 else if (checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
-                    return this.quartz.emit('ratelimited', msg, command, false, checkCooldown.expires);
+                    return this._client.emit('ratelimited', msg, command, false, checkCooldown.expires);
                 }
                 else {
                     // @ts-ignore
@@ -309,22 +302,22 @@ class CommandHandler {
             return;
         if ((_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild)
             msg.guild = (_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild;
-        if (command.ownerOnly && msg.author.id !== this.quartz.owner)
+        if (command.ownerOnly && msg.author.id !== this._client.owner)
             return;
-        if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this.quartz.owner)
+        if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner)
             return this.client.embeds.embed(msg, `<@${msg.author.id}>, **Currently Unavailable:** The bot is currently unavailable.`);
         if (command.userPermissions) {
             if (typeof command.userPermissions === 'function') {
                 const missing = await command.userPermissions(msg);
                 if (missing != null) {
-                    this.quartz.emit('missingPermission', msg, command, missing);
+                    this._client.emit('missingPermission', msg, command, missing);
                     return;
                 }
             }
             else if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild) {
                 const perm = msg.member.permission.has(command.userPermissions);
                 if (!perm) {
-                    this.quartz.emit('missingPermission', msg, command, command.userPermissions);
+                    this._client.emit('missingPermission', msg, command, command.userPermissions);
                     return;
                 }
             }
@@ -332,10 +325,10 @@ class CommandHandler {
         // @ts-ignore
         await command.run(msg, parsedArgs || args)
             .then(() => {
-            return this.quartz.emit('commandRun', msg, command);
+            return this._client.emit('commandRun', msg, command);
         })
             .catch((error) => {
-            return this.quartz.logger.error(error);
+            return this._client.logger.error(error);
         });
     }
 }

@@ -1,16 +1,17 @@
 import Eris from 'eris'
+import { Client, Message } from '..'
 
 const filter = (search: string) => {
   return (channel: Eris.TextChannel) => channel.name.toLowerCase() === search
 }
 
 class ChannelType {
-  client: Eris.Client
-  constructor (client: Eris.Client) {
+  client: Client
+  constructor (client: Client) {
     this.client = client
   }
 
-  parse (value: string, msg: Eris.Message) {
+  parse (value: string, msg: Message) {
     if (!value || value.length <= 0 || !msg || !msg.member?.guild || typeof value !== 'string') return undefined
     const match = value.match(/^(?:<#)?([0-9]+)>?$/)
     if (match) {

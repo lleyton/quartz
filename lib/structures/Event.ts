@@ -1,4 +1,5 @@
 import Base from './Base'
+import { Client } from '..'
 /** Event Class */
 class Event extends Base {
   /**
@@ -6,25 +7,15 @@ class Event extends Base {
    * @param {object} client - Client object
    * @param {object} options - Options object
    */
-  private _client: any
   name: string
 
-  constructor (client: any, options = {}) {
+  constructor (client: Client, options = {}) {
     super(client)
     const {
       name = ''
     }: any = options
 
     this.name = name
-    this._client = client
-  }
-
-  /**
-   * Get the eris client object
-   * @return {object} The eris client object.
-   */
-  public get client () {
-    return this._client
   }
 
   /**

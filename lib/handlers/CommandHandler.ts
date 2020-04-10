@@ -3,14 +3,15 @@ import { readdirSync, statSync } from 'fs'
 import { join, sep, resolve } from 'path'
 import Eris, { Collection } from 'eris'
 import ArgumentHandler from './ArgumentHandler'
-import { ClientOptions, EmbedOptions } from '../QuartzTypes'
+import { ClientOptions, EmbedOptions, Message } from '../QuartzTypes'
 import Command from '../structures/Command'
+import { Client } from '..'
 
 const types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float']
 
 /** CommandHandler Class */
 class CommandHandler {
-  private _quartz: any
+  private _client: Client
   private _prefix: any
   private _settings: any
   private _text: any
@@ -29,9 +30,9 @@ class CommandHandler {
    * @param {object} quartz - QuartzClient object
    * @param {object} options - commandHandler options
    */
-  constructor (quartz: any, options: ClientOptions['commandHandler']) {
+  constructor (client: Client, options: ClientOptions['commandHandler']) {
     if (!options) options = { directory: './commands', prefix: '!', debug: false, defaultCooldown: 1000, settings: null, text: 'Quartz', logo: '', color: 0xFFFFFF }
-    this._quartz = quartz
+    this._client = client
     this.directory = options.directory || './commands'
     this.debug = options.debug || false
     this._prefix = options.prefix || '!'
@@ -47,19 +48,11 @@ class CommandHandler {
   }
 
   /**
-   * Get the quartz client object
-   * @return {object} The quartz client object.
-   */
-  get quartz () {
-    return this._quartz
-  }
-
-  /**
    * Get the eris client object
    * @return {object} The eris client object.
    */
   get client () {
-    return this._quartz.client
+    return this._client
   }
 
   /**
@@ -104,26 +97,30 @@ class CommandHandler {
    * Load the commands from the folder
    */
   async loadCommands (): Promise<void> {
-    const modules = this.loadModules()
-    if (modules.length <= 0) throw new Error(`No category folders found in ${this.directory}`)
-    await modules.forEach(async module => {
-      const files = await readdirSync(`${this.directory}${sep}${module}`).filter(f => f.endsWith('.js') || f.endsWith('.ts'))
-      if (files.length <= 0) throw new Error(`No files found in commands folder ${this.directory}${sep}${module}`)
-      await files.forEach(async file => {
-        let Command = await import(resolve(`${this.directory}${sep}${module}${sep}${file}`))
-        if (typeof Command !== 'function') Command = Command.default
-        const cmd = new Command(this.client)
-        if (!cmd || !cmd.name) throw new Error(`Command ${this.directory}${sep}${module}${sep}${file} is missing a name`)
-        if (this.commands.get(cmd.name.toLowerCase())) throw new Error(`Command ${cmd.name} already exists`)
-        await cmd.aliases.forEach((alias: string) => {
-          if (this.aliases.get(alias)) throw new Error(`Alias '${alias}' of '${cmd.name}' already exists`)
+    try {
+      const modules = this.loadModules()
+      if (modules.length <= 0) throw new Error(`No category folders found in ${this.directory}`)
+      await modules.forEach(async module => {
+        const files = await readdirSync(`${this.directory}${sep}${module}`).filter(f => f.endsWith('.js') || f.endsWith('.ts'))
+        if (files.length <= 0) throw new Error(`No files found in commands folder ${this.directory}${sep}${module}`)
+        await files.forEach(async file => {
+          let Command = await import(resolve(`${this.directory}${sep}${module}${sep}${file}`))
+          if (typeof Command !== 'function') Command = Command.default
+          const cmd = new Command(this.client)
+          if (!cmd || !cmd.name) throw new Error(`Command ${this.directory}${sep}${module}${sep}${file} is missing a name`)
+          if (this.commands.get(cmd.name.toLowerCase())) throw new Error(`Command ${cmd.name} already exists`)
+          await cmd.aliases.forEach((alias: string) => {
+            if (this.aliases.get(alias)) throw new Error(`Alias '${alias}' of '${cmd.name}' already exists`)
+          })
+          this.commands.set(cmd.name.toLowerCase(), cmd)
+          this.modules.set(cmd.name, module)
+          if (this.debug) this._client.logger.info(`Loading command ${cmd.name} from ${module}`)
+          if (cmd.aliases && cmd.aliases.length > 0) await cmd.aliases.forEach((alias: string) => this.aliases.set(alias, cmd.name))
         })
-        this.commands.set(cmd.name.toLowerCase(), cmd)
-        this.modules.set(cmd.name, module)
-        if (this.debug) this.quartz.logger.info(`Loading command ${cmd.name} from ${module}`)
-        if (cmd.aliases && cmd.aliases.length > 0) await cmd.aliases.forEach((alias: string) => this.aliases.set(alias, cmd.name))
       })
-    })
+    } catch (error) {
+      throw new Error(error)
+    }
   }
 
   /**
@@ -182,7 +179,7 @@ class CommandHandler {
    * @param {object} options - The embed options
    * @return {object} The embed
    */
-  async embed (msg: Eris.Message, message: string, options: EmbedOptions): Promise<Eris.Message> {
+  async embed (msg: Message, message: string, options: EmbedOptions): Promise<Message|Eris.Message> {
     const generateEmbed = new Embed()
     if (!options) options = { reply: false, bold: false, color: null, footer: false, text: false }
     if (options.reply && !options.bold) message = `<@${msg.author.id}>, ${message}`
@@ -200,7 +197,7 @@ class CommandHandler {
    * Runs commands
    * @param {object} msg - The message object
    */
-  async _onMessageCreate (msg: Eris.Message): Promise<void> {
+  async _onMessageCreate (msg: Message): Promise<void|any> {
     if (!msg.author || msg.author.bot || !msg.member?.guild) return
     const prefix = await this.prefix(msg)
     const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -240,15 +237,15 @@ class CommandHandler {
     if (command.botPermissions) {
       if (typeof command.botPermissions === 'function') {
         const missing = await command.botPermissions(msg)
-        if (missing != null) return this.quartz.emit('missingPermission', msg, command, missing)
+        if (missing != null) return this._client.emit('missingPermission', msg, command, missing)
       } else if (msg.member?.guild) {
         const botPermissions = msg.member?.guild.members.get(this.client.user.id).permission
         if (command.botPermissions instanceof Array) {
           for (const p of command.botPermissions) {
-            if (!botPermissions.has(p)) return this.quartz.emit('missingPermission', msg, command, p)
+            if (!botPermissions.has(p)) return this._client.emit('missingPermission', msg, command, p)
           }
         } else {
-          if (!botPermissions.has(command.botPermissions)) return this.quartz.emit('missingPermission', msg, command, command.botPermissions)
+          if (!botPermissions.has(command.botPermissions)) return this._client.emit('missingPermission', msg, command, command.botPermissions)
         }
       }
     }
@@ -262,9 +259,9 @@ class CommandHandler {
         } else if (!checkCooldown.notified && checkCooldown.command >= msg.command.cooldown.command) {
           checkCooldown.notified = true
           this.cooldowns.set(msg.author.id, checkCooldown)
-          return this.quartz.emit('ratelimited', msg, command, true, checkCooldown.expires)
+          return this._client.emit('ratelimited', msg, command, true, checkCooldown.expires)
         } else if (checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
-          return this.quartz.emit('ratelimited', msg, command, false, checkCooldown.expires)
+          return this._client.emit('ratelimited', msg, command, false, checkCooldown.expires)
         } else {
           // @ts-ignore
           this.cooldowns.set(msg.author.id, { expires: Date.now() + msg.command.cooldown.expires, notified: false, command: ++checkCooldown.command })
@@ -276,19 +273,19 @@ class CommandHandler {
     }
     if (command.guildOnly && !msg.member?.guild) return
     if (msg.member?.guild) msg.guild = msg.member?.guild
-    if (command.ownerOnly && msg.author.id !== this.quartz.owner) return
-    if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this.quartz.owner) return this.client.embeds.embed(msg, `<@${msg.author.id}>, **Currently Unavailable:** The bot is currently unavailable.`)
+    if (command.ownerOnly && msg.author.id !== this._client.owner) return
+    if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner) return this.client.embeds.embed(msg, `<@${msg.author.id}>, **Currently Unavailable:** The bot is currently unavailable.`)
     if (command.userPermissions) {
       if (typeof command.userPermissions === 'function') {
         const missing = await command.userPermissions(msg)
         if (missing != null) {
-          this.quartz.emit('missingPermission', msg, command, missing)
+          this._client.emit('missingPermission', msg, command, missing)
           return
         }
       } else if (msg.member?.guild) {
         const perm = msg.member.permission.has(command.userPermissions)
         if (!perm) {
-          this.quartz.emit('missingPermission', msg, command, command.userPermissions)
+          this._client.emit('missingPermission', msg, command, command.userPermissions)
           return
         }
       }
@@ -296,10 +293,10 @@ class CommandHandler {
     // @ts-ignore
     await command.run(msg, parsedArgs || args)
       .then(() => {
-        return this.quartz.emit('commandRun', msg, command)
+        return this._client.emit('commandRun', msg, command)
       })
       .catch((error: any) => {
-        return this.quartz.logger.error(error)
+        return this._client.logger.error(error)
       })
   }
 }

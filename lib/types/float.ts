@@ -1,12 +1,12 @@
-import Eris from 'eris'
+import { Message, Client } from '..'
 
 class FloatType {
-  client: Eris.Client
-  constructor (client: Eris.Client) {
+  client: Client
+  constructor (client: Client) {
     this.client = client
   }
 
-  parse (value: string, msg: Eris.Message) {
+  parse (value: string, msg: Message) {
     if (!value || value.length <= 0 || !msg || typeof value !== 'string') return undefined
     const float = Number.parseFloat(value)
     return float

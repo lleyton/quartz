@@ -2,8 +2,8 @@ import { sep, resolve } from 'path'
 import { readdirSync } from 'fs'
 import Eris, { Collection } from 'eris'
 import { ClientOptions } from '../QuartzTypes'
-import QuartzClient from '../QuartzClient'
 import Command from '../structures/Command'
+import Client from '../QuartzClient'
 
 const quartzEvents = ['missingPermission', 'commandRun', 'ratelimited']
 
@@ -14,25 +14,17 @@ class EventHandler {
    * @param {object} quartz - QuartzClient object
    * @param {object} options - eventHandler options
    */
-  private _quartz: any
+  private _client: Client
   directory: string
   debug: boolean
   events: any
 
-  constructor (quartz: QuartzClient, options: ClientOptions['eventHandler']) {
+  constructor (client: Client, options: ClientOptions['eventHandler']) {
     if (!options) options = { directory: './commands', debug: false }
-    this._quartz = quartz
+    this._client = client
     this.directory = options.directory
     this.debug = options.debug
     this.events = new Collection(null)
-  }
-
-  /**
-   * Get the quartz client object
-   * @return {object} The quartz client object.
-   */
-  get quartz (): QuartzClient {
-    return this._quartz
   }
 
   /**
@@ -40,7 +32,7 @@ class EventHandler {
    * @return {object} The eris client object.
    */
   get client (): Eris.Client {
-    return this._quartz.client
+    return this._client
   }
 
   /**
@@ -57,8 +49,8 @@ class EventHandler {
       if (!evt.name) throw new Error(`Event ${this.directory}${sep}${file} is missing a name`)
       if (this.events.get(evt.name)) throw new Error(`Event ${this.directory}${sep}${file} already exists`)
       this.events.set(evt.name, evt)
-      if (this.debug) this.quartz.logger.info(`Loading event ${evt.name}`)
-      if (quartzEvents.includes(evt.name)) this.quartz.on(evt.name, evt.run.bind(this))
+      if (this.debug) this._client.logger.info(`Loading event ${evt.name}`)
+      if (quartzEvents.includes(evt.name)) this._client.on(evt.name, evt.run.bind(this))
       else if (evt.name === 'messageCreate') this.client.on(evt.name, this._onMessageCreate.bind(this))
       else this.client.on(evt.name, evt.run.bind(this))
     })
@@ -71,7 +63,7 @@ class EventHandler {
   async _onMessageCreate (msg: Eris.Message): Promise<void> {
     if (!msg.author || msg.author.bot) return
     msg.command = null
-    const prefix: string | string[] = await this.quartz.commandHandler.prefix(msg)
+    const prefix: string | string[] = await this._client.commandHandler.prefix(msg)
     const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const content: string = msg.content.toLowerCase()
     if (Array.isArray(prefix)) {
@@ -89,7 +81,7 @@ class EventHandler {
     if (msg.prefix) {
       const args: string[] = msg.content.substring(msg.prefix.length).split(' ')
       const label: string = args.shift().toLowerCase()
-      const command: Command = await this.quartz.commandHandler.getCommand(label)
+      const command: Command = await this._client.commandHandler.getCommand(label)
       // @ts-ignore
       if (command) msg.command = command
     }

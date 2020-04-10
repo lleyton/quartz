@@ -1,19 +1,30 @@
+import Eris from 'eris'
+
 declare module 'quartz' {
+  export interface Message extends Eris.Message {
+    guild: Eris.Guild,
+    settings(): any,
+    color(): any,
+    text(): any,
+    logo(): any
+  }
+
   export interface ClientOptions {
-    owner: string | null,
-    eventHandler: {
-      directory: string,
-      debug: boolean
+    eris?: Eris.ClientOptions
+    owner?: string | null
+    eventHandler?: {
+      directory: string
+      debug?: boolean
     },
     commandHandler: {
-      prefix: any,
-      directory: string,
-      defaultCooldown: number,
-      debug: boolean,
-      settings: any,
-      text: any,
-      logo: any,
-      color: any
+      prefix?: any
+      directory: string
+      defaultCooldown?: number
+      debug?: boolean
+      settings?: any
+      text?: any
+      logo?: any
+      color?: any
     }
   }
 
@@ -30,14 +41,15 @@ declare module 'quartz' {
     command: number
   }
 
-  export class QuartzClient {
+  export class Client {
     owner: string | null
     logger: any
     eventHandler: any
     commandHandler: CommandHandler
-    constructor(options: any, eris: any)
+    constructor(token?: string, options?: ClientOptions, extensions?: any)
     client(): any
     start(): void
+    [name: string]: any
   }
 
   export class CommandHandler {
@@ -49,7 +61,7 @@ declare module 'quartz' {
     aliases: any
     cooldowns: any
     constructor (quartz: any, options: ClientOptions['commandHandler'])  
-    quartz(): QuartzClient
+    quartz(): Client
     client(): any
     getCommand(commandName: string): Command
     getCommands(module: string): Command[]
@@ -68,7 +80,7 @@ declare module 'quartz' {
     debug: boolean
     events: any
     constructor (quartz: any, options: ClientOptions['eventHandler'])  
-    quartz(): QuartzClient
+    quartz(): Client
     client(): any
     loadEvents(): void
   }
@@ -81,8 +93,8 @@ declare module 'quartz' {
   }
 
   export class Base {
-    constructor(quartzClient: QuartzClient)
-    quartz(): QuartzClient
+    constructor(quartzClient: Client)
+    quartz(): Client
     client(): any
     logger(): LogHandler
   }
@@ -168,6 +180,14 @@ declare module 'quartz' {
     run(...args: any): Promise<any>
   }
 
+  export interface Message extends Eris.Message {
+    guild: Eris.Guild
+    embed(message: string, options?: any): Promise<Eris.Message>
+    color(): string
+    text(): string
+    logo(): string
+    settings(): any
+  }
   export class ChannelType {
     client: any
     parse(value: string, msg: any): any

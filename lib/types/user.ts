@@ -1,16 +1,16 @@
-import Eris from 'eris'
+import { Message, Client } from '..'
 
 const filter = (search: string) => {
   return (member: any) => member.user.username.toLowerCase() === search || (member.nick && member.nick.toLowerCase() === search) || `${member.user.username.toLowerCase()}#${member.user.discriminator}` === search
 }
 
 class UserType {
-  client: Eris.Client
-  constructor (client: Eris.Client) {
+  client: Client
+  constructor (client: Client) {
     this.client = client
   }
 
-  parse (value: string, msg: Eris.Message) {
+  parse (value: string, msg: Message) {
     if (!value || value.length <= 0 || !msg || typeof value !== 'string') return undefined
     const match = value.match(/^(?:<@!?)?([0-9]+)>?$/)
     if (match) {
