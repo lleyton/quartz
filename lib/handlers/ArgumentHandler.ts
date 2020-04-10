@@ -1,6 +1,6 @@
 import Eris from 'eris'
 import Command from '../structures/Command'
-import { Message } from '../QuartzTypes'
+import { Message } from '../types'
 
 interface Argument {
   key?: string
@@ -28,7 +28,7 @@ class ArgumentHandler {
     this.command = command
     this.args = args
     this.string = args.join(' ')
-    this.types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float']
+    this.types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float', 'member']
   }
 
   /**
@@ -90,9 +90,9 @@ class ArgumentHandler {
       const parsed: any = {}
       const args = this.quoted()
       let prompt = false
-      this.command.args.forEach((arg: Argument) => {
+      Promise.all(this.command.args.forEach(async (arg: Argument) => {
         if (arg.key && arg.type && this.types.includes(arg.type)) {
-          const CustomType = require(`../types/${arg.type}`).default
+          const CustomType = await import(`../types/${arg.type}`)
           const type = new CustomType(this.client)
           const defaultValue = this.default(arg, msg)
           if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg).length <= 0)) {
@@ -126,7 +126,7 @@ class ArgumentHandler {
             parsed[arg.key] = result
           }
         }
-      })
+      }))
       if (prompt) return undefined
       return parsed || this.args
     } else {

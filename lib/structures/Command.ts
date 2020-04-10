@@ -1,10 +1,10 @@
 import Base from './Base'
-import { Cooldown } from '../QuartzTypes'
+import { Cooldown } from '../types'
 import { Client } from '..'
 
 interface Argument {
   key?: string
-  type?: string
+  type?: 'user' | 'string' | 'channel' | 'role' | 'message' | 'integer' | 'float' | 'member'
   prompt?: string | ((msg: any) => void)
   default?: string | ((msg: any) => void)
 }
@@ -24,8 +24,8 @@ class Command extends Base {
   guildOnly: boolean
   devOnly: boolean
   description: string
-  botPermissions: any
-  userPermissions: any
+  botPermissions: Function | string | string[]
+  userPermissions: Function | string | string[]
   cooldown: Cooldown
 
   constructor (client: Client, options = {}) {

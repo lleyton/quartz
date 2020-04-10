@@ -3,27 +3,26 @@ import { readdirSync, statSync } from 'fs'
 import { join, sep, resolve } from 'path'
 import Eris, { Collection } from 'eris'
 import ArgumentHandler from './ArgumentHandler'
-import { ClientOptions, EmbedOptions, Message } from '../QuartzTypes'
+import { ClientOptions, EmbedOptions, Message } from '../types'
 import Command from '../structures/Command'
 import { Client } from '..'
-
-const types = ['user', 'string', 'channel', 'role', 'message', 'integer', 'float']
+import util from 'util'
 
 /** CommandHandler Class */
 class CommandHandler {
   private _client: Client
-  private _prefix: any
-  private _settings: any
-  private _text: any
-  private _logo: any
-  private _color : any
+  private _prefix: Function | string
+  private _settings: Function | any
+  private _text: Function | string
+  private _logo: Function | string
+  private _color: Function | string
   directory: string
   debug: boolean
   defaultCooldown: number
-  commands: any
-  modules: any
-  aliases: any
-  cooldowns: any
+  commands: Collection<any>
+  modules: Collection<any>
+  aliases: Collection<any>
+  cooldowns: Collection<any>
 
   /**
    * Create the commandHandler
@@ -37,14 +36,14 @@ class CommandHandler {
     this.debug = options.debug || false
     this._prefix = options.prefix || '!'
     this.defaultCooldown = options.defaultCooldown || 10000
-    this.commands = new Collection(null)
-    this.modules = new Collection(null)
-    this.aliases = new Collection(null)
-    this.cooldowns = new Collection(null)
+    this.commands = new Collection(undefined)
+    this.modules = new Collection(undefined)
+    this.aliases = new Collection(undefined)
+    this.cooldowns = new Collection(undefined)
     this._settings = options.settings || undefined
-    this._text = options.text || 'Quartz'
-    this._logo = options.logo || ''
-    this._color = options.color || 0xFFFFFF
+    this._text = options.text || client.user.username
+    this._logo = options.logo || client.user.avatarURL
+    this._color = options.color || undefined
   }
 
   /**
@@ -129,7 +128,16 @@ class CommandHandler {
    * @return {object} The settings object 
    */
   settings (msg: Eris.Message): any {
-    if (typeof this._settings !== 'function') return this._settings
+    if (typeof this._settings !== 'function') {
+      if (util.types.isAsyncFunction(this._settings)) {
+        return this._settings
+          .then((settings: any) => settings)
+          .catch((error: Error) => {
+            throw new Error(error.message)
+          })
+      }
+      return this._settings
+    }
     else return this._settings(msg)
   }
 
@@ -283,10 +291,14 @@ class CommandHandler {
           return
         }
       } else if (msg.member?.guild) {
-        const perm = msg.member.permission.has(command.userPermissions)
-        if (!perm) {
-          this._client.emit('missingPermission', msg, command, command.userPermissions)
-          return
+        if (Array.isArray(command.userPermissions)) {
+          command.userPermissions.forEach((userPermission) => {
+            const permission = msg.member.permission.has(userPermission)
+            if (!permission) return this._client.emit('missingPermission', msg, command, userPermission)
+          })
+        } else {
+          const permission = msg.member.permission.has(command.userPermissions)
+          if (!permission) return this._client.emit('missingPermission', msg, command, command.userPermissions)
         }
       }
     }

@@ -1,9 +1,9 @@
 import { sep, resolve } from 'path'
 import { readdirSync } from 'fs'
 import Eris, { Collection } from 'eris'
-import { ClientOptions } from '../QuartzTypes'
+import { ClientOptions } from '../types'
 import Command from '../structures/Command'
-import Client from '../QuartzClient'
+import Client from '../client'
 
 const quartzEvents = ['missingPermission', 'commandRun', 'ratelimited']
 
@@ -52,6 +52,7 @@ class EventHandler {
       if (this.debug) this._client.logger.info(`Loading event ${evt.name}`)
       if (quartzEvents.includes(evt.name)) this._client.on(evt.name, evt.run.bind(this))
       else if (evt.name === 'messageCreate') this.client.on(evt.name, this._onMessageCreate.bind(this))
+      else if (evt.name === 'ready') this.client.once(evt.name, evt.run.bind(this))
       else this.client.on(evt.name, evt.run.bind(this))
     })
   }

@@ -4,7 +4,7 @@ import CommandHandler from './handlers/CommandHandler'
 import Embed from './structures/Embed'
 import Eris from 'eris'
 
-import { ClientOptions } from './QuartzTypes'
+import { ClientOptions } from './types'
 
 /** QuartzClient Class */
 class Client extends Eris.Client {
