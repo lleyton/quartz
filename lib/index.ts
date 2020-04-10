@@ -3,7 +3,7 @@ if (Number(process.version.slice(1).split('.')[0]) < 10) throw new Error('Node 1
 import 'source-map-support/register'
 
 import Client from './client'
-import { Message } from './types'
+import { Message, Events } from './types'
 import Base from './structures/Base'
 import Command from './structures/Command'
 import Event from './structures/Event'
@@ -15,5 +15,6 @@ export {
   Command,
   Event,
   Embed,
-  Message
+  Message,
+  Events
 }

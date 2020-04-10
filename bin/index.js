@@ -8,6 +8,8 @@ if (Number(process.version.slice(1).split('.')[0]) < 10)
 require("source-map-support/register");
 const client_1 = __importDefault(require("./client"));
 exports.Client = client_1.default;
+const types_1 = require("./types");
+exports.Events = types_1.Events;
 const Base_1 = __importDefault(require("./structures/Base"));
 exports.Base = Base_1.default;
 const Command_1 = __importDefault(require("./structures/Command"));

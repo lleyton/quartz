@@ -1,53 +1,65 @@
 import Eris from 'eris'
 
 export enum Events {
-  callCreate = 'callCreate',
-  callDelete = 'callDelete',
-  callRing = 'callRing',
-  callUpdate = 'callUpdate',
-  channelCreate = 'channelCreate',
-  channelDelete = 'channelDelete',
-  channelPinUpdate = 'channelPinUpdate',
-  channelRecipientAdd = 'channelRecipientAdd',
-  channelRecipientRemove = 'channelRecipientRemove',
-  channelUpdate = 'channelUpdate',
-  connect = 'connect',
-  debug = 'debug',
-  disconnect = 'disconnect',
-  error = 'error',
-  friendSuggestionCreate = 'friendSuggestionCreate',
-  friendSuggestionDelete = 'friendSuggestionDelete',
-  guildAvailable = 'guildAvailable',
-  guildBanAdd = 'guildBanAdd',
-  guildBanRemove = 'guildBanRemove',
-  guildCreate = 'guildCreate',
-  guildDelete = 'guildDelete',
-  guildEmojisUpdate = 'guildEmojisUpdate',
-  guildMemberAdd = 'guildMemberAdd', 
-  guildMemberChunk = 'guildMemberChunk',
-  guildMemberRemove = 'guildMemberRemove',
-  guildMemberUpdate = 'guildMemberUpdate',
-  guildRoleCreate = 'guildRoleCreate',
-  guildRoleDelete = 'guildRoleDelete',
-  guildRoleUpdate = 'guildRoleUpdate',
-  guildUnavailable = 'guildUnavailable',
-  guildUpdate = 'guildUpdate',
-  hello = 'hello',
-  messageCreate = 'messageCreate',
-  messageDelete = 'messageDelete',
-  messageDeleteBulk = 'messageDeleteBulk',
-  messageReactionAdd = 'messageReactionAdd',
-  messageReactionRemove = 'messageReactionRemove',
-  messageReactionRemoveAll = 'messageReactionRemoveAll',
-  messageUpdate = 'messageUpdate',
-  presenceUpdate = 'presenceUpdate',
-  rawWS = 'rawWS',
-  ready = 'ready',
-  relationshipAdd = 'relationshipAdd',
-  relationshipRemove = 'relationshipRemove',
-  relationshipUpdate = 'relationshipUpdate',
-  shardDisconnect = 'shardDisconnect',
-  shardPreReady = 'shardPreReady'
+  CallCreate = 'callCreate',
+  CallDelete = 'callDelete',
+  CallRing = 'callRing',
+  CallUpdate = 'callUpdate',
+  ChannelCreate = 'channelCreate',
+  ChannelDelete = 'channelDelete',
+  ChannelPinUpdate = 'channelPinUpdate',
+  ChannelRecipientAdd = 'channelRecipientAdd',
+  ChannelRecipientRemove = 'channelRecipientRemove',
+  ChannelUpdate = 'channelUpdate',
+  Connect = 'connect',
+  Debug = 'debug',
+  Disconnect = 'disconnect',
+  Error = 'error',
+  FriendSuggestionCreate = 'friendSuggestionCreate',
+  FriendSuggestionDelete = 'friendSuggestionDelete',
+  GuildAvailable = 'guildAvailable',
+  GuildBanAdd = 'guildBanAdd',
+  GuildBanRemove = 'guildBanRemove',
+  GuildCreate = 'guildCreate',
+  GuildDelete = 'guildDelete',
+  GuildEmojisUpdate = 'guildEmojisUpdate',
+  GuildMemberAdd = 'guildMemberAdd', 
+  GuildMemberChunk = 'guildMemberChunk',
+  GuildMemberRemove = 'guildMemberRemove',
+  GuildMemberUpdate = 'guildMemberUpdate',
+  GuildRoleCreate = 'guildRoleCreate',
+  GuildRoleDelete = 'guildRoleDelete',
+  GuildRoleUpdate = 'guildRoleUpdate',
+  GuildUnavailable = 'guildUnavailable',
+  GuildUpdate = 'guildUpdate',
+  Hello = 'hello',
+  MessageCreate = 'messageCreate',
+  MessageDelete = 'messageDelete',
+  MessageDeleteBulk = 'messageDeleteBulk',
+  MessageReactionAdd = 'messageReactionAdd',
+  MessageReactionRemove = 'messageReactionRemove',
+  MessageReactionRemoveAll = 'messageReactionRemoveAll',
+  MessageUpdate = 'messageUpdate',
+  PresenceUpdate = 'presenceUpdate',
+  RawWS = 'rawWS',
+  Ready = 'ready',
+  RelationshipAdd = 'relationshipAdd',
+  RelationshipRemove = 'relationshipRemove',
+  RelationshipUpdate = 'relationshipUpdate',
+  ShardDisconnect = 'shardDisconnect',
+  ShardPreReady = 'shardPreReady',
+  ShardReady = 'shardReady',
+  ShardResume = 'shardResume',
+  TypingStart = 'typingStart',
+  UnavailableGuildCreate = 'unavailableGuildCreate',
+  Unknown = 'Unknown',
+  UserUpdate = 'userUpdate',
+  VoiceChannelJoin = 'voiceChannelJoin',
+  VoiceChannelLeave = 'voiceChannelLeave',
+  VoiceChannelSwitch = 'voiceChannelSwitch',
+  VoiceStateUpdate = 'voiceStateUpdate',
+  Warn = 'warn',
+  WebhooksUpdate = 'webhooksUpdate'
 }
 
 export interface ClientOptions {
@@ -221,12 +233,12 @@ export interface Event extends Base {
 }
 
 export interface Message extends Eris.Message {
-  guild: Eris.Guild
-  embed(message: string, options?: any): Promise<Message>
-  color(): string
-  text(): string
-  logo(): string
-  settings(): any
+  guild?: Eris.Guild
+  embed?(message: string, options?: any): Promise<Message>
+  color?(): string
+  text?(): string
+  logo?(): string
+  settings?(): any
 }
 export interface ChannelType {
   client: any
