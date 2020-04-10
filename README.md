@@ -14,28 +14,26 @@
 
 Client Example:
 ```js
-const { QuartzClient } = require('quartz')
-const { Client } = require('eris')
-const path = require('path')
+import { Client } from 'quartz'
+import { resolve } from 'path'
 
-const eris = new Client('TOKEN')
-const client = new QuartzClient({
+const client = new QuartzClient('TOKEN', {
   owner: 'ownerID',
   eventHandler: {
-    directory: path.resolve('./events')
+    directory: resolve('./events')
   },
   commandHandler: {
-    directory: path.resolve('./commands'),
+    directory: resolve('./commands'),
     prefix: '!'
   }
-}, eris)
+})
 
 client.start()
 ```
 
 Command Example:
 ```js
-const { Command } = require('quartz')
+import { Command } from 'quartz'
 
 class Ping extends Command {
   constructor (client) {
@@ -49,15 +47,16 @@ class Ping extends Command {
   }
 
   run (msg, args) {
-    return await msg.channel.createMessage('Pong!')
+    return msg.channel.createMessage('Pong!')
   }
 }
-module.exports = Ping
+
+export default Ping
 ```
 
 Event Example:
 ```js
-const { Event } = require('quartz')
+import { Event } from 'quartz'
 
 class Ready extends Event {
   constructor (client) {
@@ -70,5 +69,5 @@ class Ready extends Event {
     return console.log('Bot Ready!')
   }
 }
-module.exports = Ready
+export default Ready
 ```
