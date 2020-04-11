@@ -1,21 +1,20 @@
-import Embed from '../structures/Embed'
 import { readdirSync, statSync } from 'fs'
 import { join, sep, resolve } from 'path'
 import Eris, { Collection } from 'eris'
 import ArgumentHandler from './ArgumentHandler'
-import { ClientOptions, EmbedOptions, Message } from '../types'
+import { ClientOptions } from '../types'
 import Command from '../structures/Command'
 import { Client } from '..'
-import util from 'util'
+import Message from '../structures/Message'
 
 /** CommandHandler Class */
 class CommandHandler {
-  private _client: Client
-  private _prefix: Function | string
-  private _settings: Function | any
-  private _text: Function | string
-  private _logo: Function | string
-  private _color: Function | string
+  private readonly _client: Client
+  private readonly _prefix: Function | string
+  private readonly _settings: Function | any
+  private readonly _text: Function | string
+  private readonly _logo: Function | string
+  private readonly _color: Function | string
   directory: string
   debug: boolean
   defaultCooldown: number
@@ -50,14 +49,14 @@ class CommandHandler {
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  get client () {
+  get client (): Client {
     return this._client
   }
 
   /**
    * Get command by name
    * @param {string} commandName - The command name.
-   * @return {object} The commands object 
+   * @return {object} The commands object
    */
   getCommand (commandName: string): Command {
     if (!commandName) return undefined
@@ -99,7 +98,7 @@ class CommandHandler {
     try {
       const modules = this.loadModules()
       if (modules.length <= 0) throw new Error(`No category folders found in ${this.directory}`)
-      await modules.forEach(async module => {
+      await modules.forEach(async (module) => {
         const files = await readdirSync(`${this.directory}${sep}${module}`).filter(f => f.endsWith('.js') || f.endsWith('.ts'))
         if (files.length <= 0) throw new Error(`No files found in commands folder ${this.directory}${sep}${module}`)
         await files.forEach(async file => {
@@ -123,102 +122,23 @@ class CommandHandler {
   }
 
   /**
-   * Get server settings
-   * @param {object} msg - The message object
-   * @return {object} The settings object 
-   */
-  settings (msg: Eris.Message): any {
-    if (typeof this._settings !== 'function') {
-      if (util.types.isAsyncFunction(this._settings)) {
-        return this._settings
-          .then((settings: any) => settings)
-          .catch((error: Error) => {
-            throw new Error(error.message)
-          })
-      }
-      return this._settings
-    }
-    else return this._settings(msg)
-  }
-
-  /**
-   * Get footer text
-   * @param {object} msg - The message object
-   * @return {string} The footer text 
-   */
-  text (msg: Eris.Message): string {
-    if (typeof this._text !== 'function') return this._text
-    else return this._text(msg)
-  }
-
-  /**
-   * Get footer logo
-   * @param {object} msg - The message object
-   * @return {string} The footer logo 
-   */
-  logo (msg: Eris.Message): string {
-    if (typeof this._logo !== 'function') return this._logo
-    else return this._logo(msg)
-  }
-
-  /**
-   * Get footer color
-   * @param {object} msg - The message object
-   * @return {string} The footer color 
-   */
-  color (msg: Eris.Message): string {
-    if (typeof this._color !== 'function') return this._color
-    else return this._color(msg)
-  }
-
-  /**
-   * Get prefix
-   * @param {object} msg - The message object
-   * @return {string} The prefix
-   */
-  prefix (msg: Eris.Message): string {
-    if (typeof this._prefix !== 'function') return this._prefix
-    else return this._prefix(msg)
-  }
-
-  /**
-   * Return a embed
-   * @param {string} message - The embed content
-   * @param {object} options - The embed options
-   * @return {object} The embed
-   */
-  async embed (msg: Message, message: string, options: EmbedOptions): Promise<Message|Eris.Message> {
-    const generateEmbed = new Embed()
-    if (!options) options = { reply: false, bold: false, color: null, footer: false, text: false }
-    if (options.reply && !options.bold) message = `<@${msg.author.id}>, ${message}`
-    else if (options.bold && !options.reply) message = `**${message}**`
-    else if (options.bold && options.reply) message = `**<@${msg.author.id}>, ${message}**`
-    if (options.text) return msg.channel.createMessage(message)
-    generateEmbed.setDescription(message)
-    if (options.color) generateEmbed.setColor(options.color)
-    else generateEmbed.setColor(+await msg.color())
-    if (options.footer) generateEmbed.setFooter(await msg.text(), await msg.logo())
-    return msg.channel.createMessage({ embed: generateEmbed })
-  }
-
-  /**
    * Runs commands
    * @param {object} msg - The message object
    */
-  async _onMessageCreate (msg: Message): Promise<void|any> {
-    if (!msg.author || msg.author.bot || !msg.member?.guild) return
-    const prefix = await this.prefix(msg)
-    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  async _onMessageCreate (_msg: Message): Promise<void|any> {
+    if (!_msg.author || _msg.author.bot || !_msg.member?.guild) return
+    const msg = new Message(_msg, this.client)
+    const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const content = msg.content.toLowerCase()
-    if (Array.isArray(prefix)) {
-      prefix.forEach(p => escapeRegex(p))
-      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${prefix.join('|')})\\s*`)
+    if (Array.isArray(msg?.prefix)) {
+      msg?.prefix?.forEach(p => escapeRegex(p))
+      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
       if (!prefixRegex.test(content)) return undefined
       const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
       if (!matchedPrefix) return undefined
       msg.prefix = matchedPrefix
     } else {
-      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(prefix.toLowerCase())})\\s*`)
+      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg?.prefix?.toLowerCase())})\\s*`)
       if (!prefixRegex.test(content)) return
       const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
       if (!matchedPrefix) return
@@ -226,17 +146,12 @@ class CommandHandler {
     }
     if (!msg.prefix) return
     msg.content = msg.content.replace(/<@!/g, '<@')
-    let args = msg.content.slice(msg.prefix.length).trim().split(/ +/)
+    const args = msg.content.slice(msg.prefix.length).trim().split(/ +/)
     const label = args.shift().toLowerCase()
     const command = this.getCommand(label)
     if (!command) return
     // @ts-ignore
     msg.command = command
-    msg.color = this.color.bind(this, msg)
-    msg.logo = this.logo.bind(this, msg)
-    msg.text = this.text.bind(this, msg)
-    msg.embed = this.embed.bind(this, msg)
-    msg.settings = this.settings.bind(this, msg)
     const parsedArgs = new ArgumentHandler(this.client, command, args).parse(msg)
     if (!parsedArgs) return
     // @ts-ignore
@@ -259,24 +174,21 @@ class CommandHandler {
     }
     if (command.cooldown && command.cooldown.expires && command.cooldown.command) {
       const checkCooldown = this.cooldowns.get(msg.author.id)
-      if (checkCooldown && checkCooldown.expires) {
+      if (checkCooldown?.expires) {
         if (new Date(checkCooldown.expires) < new Date()) {
           this.cooldowns.delete(msg.author.id)
           this.cooldowns.set(msg.author.id, { expires: Date.now() + command.cooldown.expires, notified: false, command: 1 })
-          // @ts-ignore
-        } else if (!checkCooldown.notified && checkCooldown.command >= msg.command.cooldown.command) {
+        } else if (!checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
           checkCooldown.notified = true
           this.cooldowns.set(msg.author.id, checkCooldown)
           return this._client.emit('ratelimited', msg, command, true, checkCooldown.expires)
         } else if (checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
           return this._client.emit('ratelimited', msg, command, false, checkCooldown.expires)
         } else {
-          // @ts-ignore
-          this.cooldowns.set(msg.author.id, { expires: Date.now() + msg.command.cooldown.expires, notified: false, command: ++checkCooldown.command })
+          this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: ++checkCooldown.command })
         }
       } else {
-         // @ts-ignore
-        this.cooldowns.set(msg.author.id, { expires: Date.now() + msg.command.cooldown.expires, notified: false, command: 1 })
+        this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 })
       }
     }
     if (command.guildOnly && !msg.member?.guild) return

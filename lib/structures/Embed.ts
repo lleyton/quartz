@@ -8,20 +8,23 @@ class Embed {
   fields: any[]
   url: string
   author: {
-    name: string,
-    icon_url: string,
+    name: string
+    icon_url: string
     url: string
   }
+
   color: number
   description: string
   file: string
   footer: {
-    text: string,
+    text: string
     icon_url: string
   }
+
   image: {
     url: string
   }
+
   date: Date
   title: string
   thumbnail: {
@@ -40,7 +43,7 @@ class Embed {
    * @param {string} icon - The icon displayed in the embed header
    * @param {string} url - The url displayed in the embed header
    */
-  setAuthor (name: string, icon: string, url: string) {
+  setAuthor (name: string, icon: string, url: string): this {
     this.author = { name, icon_url: icon, url }
     return this
   }
@@ -49,10 +52,10 @@ class Embed {
    * Color for the embed
    * @param {string} color - A color hex that is a string or a number
    */
-  setColor (color: string | number) {
+  setColor (color: string | number): this {
     if (typeof color === 'string') color = parseInt(color.replace('#', ''), 16)
     if (color < 0 || color > 0xFFFFFF) throw new RangeError('Color range is invaild.')
-    else if (color && isNaN(color)) throw new TypeError('Unable to convert color.')
+    else if (isNaN(color)) throw new TypeError('Unable to convert color.')
     this.color = color
     return this
   }
@@ -61,7 +64,7 @@ class Embed {
    * Description for the embed
    * @param {string} desc - Set the description field of the embed
    */
-  setDescription (desc: string) {
+  setDescription (desc: string): this {
     this.description = desc.toString().substring(0, 2048)
     return this
   }
@@ -72,10 +75,10 @@ class Embed {
    * @param {string} value - A value
    * @param {boolean} inline - A inline
    */
-  addField (name: string, value: string, inline: boolean = false) {
+  addField (name: string, value: string, inline: boolean = false): this {
     if (this.fields.length >= 25) return this
-    else if (!name) return this
-    else if (!value) return false
+    else if (name === '') throw new TypeError('Missing name field.')
+    else if (value === '') throw new TypeError('Missing value field.')
     this.fields.push({ name: name.toString().substring(0, 256), value: value.toString().substring(0, 1024), inline })
     return this
   }
@@ -84,7 +87,7 @@ class Embed {
    * File for the embed
    * @param {string} file - A file
    */
-  setFile (file: string) {
+  setFile (file: string): this {
     this.file = file
     return this
   }
@@ -94,7 +97,7 @@ class Embed {
    * @param {string} text - A text
    * @param {string} icon - A icon
    */
-  setFooter (text: string, icon: string) {
+  setFooter (text: string, icon: string): this {
     this.footer = { text: text.toString().substring(0, 2048), icon_url: icon }
     return this
   }
@@ -103,7 +106,7 @@ class Embed {
    * Image for the embed
    * @param {string} url - A url
    */
-  setImage (url: string) {
+  setImage (url: string): this {
     this.image = { url }
     return this
   }
@@ -112,7 +115,7 @@ class Embed {
    * Timestamp for the embed
    * @param {date} time - A date
    */
-  setTimestamp (time = new Date()) {
+  setTimestamp (time = new Date()): this {
     this.date = time
     return this
   }
@@ -121,7 +124,7 @@ class Embed {
    * Title for the embed
    * @param {string} title - A title
    */
-  setTitle (title: string) {
+  setTitle (title: string): this {
     this.title = title.toString().substring(0, 256)
     return this
   }
@@ -130,7 +133,7 @@ class Embed {
    * Thumbnail for the embed
    * @param {string} url - A url
    */
-  setThumbnail (url: string) {
+  setThumbnail (url: string): this {
     this.thumbnail = { url }
     return this
   }
@@ -139,7 +142,7 @@ class Embed {
    * URL for the embed
    * @param {string} url - A url
    */
-  setURL (url: string) {
+  setURL (url: string): this {
     this.url = url
     return this
   }

@@ -2,6 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 /** Base Class */
 class Base {
+    /**
+     * Create the eventHandler
+     * @param {object} quartzClient - QuartzClient object
+     */
     constructor(client) {
         this._client = client;
     }

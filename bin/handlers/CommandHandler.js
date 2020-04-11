@@ -10,12 +10,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Embed_1 = __importDefault(require("../structures/Embed"));
 const fs_1 = require("fs");
 const path_1 = require("path");
 const eris_1 = require("eris");
 const ArgumentHandler_1 = __importDefault(require("./ArgumentHandler"));
-const util_1 = __importDefault(require("util"));
+const Message_1 = __importDefault(require("../structures/Message"));
 /** CommandHandler Class */
 class CommandHandler {
     /**
@@ -124,96 +123,6 @@ class CommandHandler {
         }
     }
     /**
-     * Get server settings
-     * @param {object} msg - The message object
-     * @return {object} The settings object
-     */
-    settings(msg) {
-        if (typeof this._settings !== 'function') {
-            if (util_1.default.types.isAsyncFunction(this._settings)) {
-                return this._settings
-                    .then((settings) => settings)
-                    .catch((error) => {
-                    throw new Error(error.message);
-                });
-            }
-            return this._settings;
-        }
-        else
-            return this._settings(msg);
-    }
-    /**
-     * Get footer text
-     * @param {object} msg - The message object
-     * @return {string} The footer text
-     */
-    text(msg) {
-        if (typeof this._text !== 'function')
-            return this._text;
-        else
-            return this._text(msg);
-    }
-    /**
-     * Get footer logo
-     * @param {object} msg - The message object
-     * @return {string} The footer logo
-     */
-    logo(msg) {
-        if (typeof this._logo !== 'function')
-            return this._logo;
-        else
-            return this._logo(msg);
-    }
-    /**
-     * Get footer color
-     * @param {object} msg - The message object
-     * @return {string} The footer color
-     */
-    color(msg) {
-        if (typeof this._color !== 'function')
-            return this._color;
-        else
-            return this._color(msg);
-    }
-    /**
-     * Get prefix
-     * @param {object} msg - The message object
-     * @return {string} The prefix
-     */
-    prefix(msg) {
-        if (typeof this._prefix !== 'function')
-            return this._prefix;
-        else
-            return this._prefix(msg);
-    }
-    /**
-     * Return a embed
-     * @param {string} message - The embed content
-     * @param {object} options - The embed options
-     * @return {object} The embed
-     */
-    async embed(msg, message, options) {
-        const generateEmbed = new Embed_1.default();
-        if (!options)
-            options = { reply: false, bold: false, color: null, footer: false, text: false };
-        if (options.reply && !options.bold)
-            message = `<@${msg.author.id}>, ${message}`;
-        else if (options.bold && !options.reply)
-            message = `**${message}**`;
-        else if (options.bold && options.reply)
-            message = `**<@${msg.author.id}>, ${message}**`;
-        if (options.text)
-            return msg.channel.createMessage(message);
-        generateEmbed.setDescription(message);
-        if (options.color)
-            generateEmbed.setColor(options.color);
-        else
-            generateEmbed.setColor(+await msg.color());
-        if (options.footer)
-            generateEmbed.setFooter(await msg.text(), await msg.logo());
-        return msg.channel.createMessage({ embed: generateEmbed });
-    }
-    /**
      * Runs commands
      * @param {object} msg - The message object
      */
@@ -221,7 +130,8 @@ class CommandHandler {
         var _a, _b, _c, _d, _e, _f, _g;
         if (!msg.author || msg.author.bot || !((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild))
             return;
-        const prefix = await this.prefix(msg);
+        msg = new Message_1.default(msg, this.client);
+        const prefix = msg.prefix;
         const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const content = msg.content.toLowerCase();
         if (Array.isArray(prefix)) {
@@ -246,18 +156,13 @@ class CommandHandler {
         if (!msg.prefix)
             return;
         msg.content = msg.content.replace(/<@!/g, '<@');
-        let args = msg.content.slice(msg.prefix.length).trim().split(/ +/);
+        const args = msg.content.slice(msg.prefix.length).trim().split(/ +/);
         const label = args.shift().toLowerCase();
         const command = this.getCommand(label);
         if (!command)
             return;
         // @ts-ignore
         msg.command = command;
-        msg.color = this.color.bind(this, msg);
-        msg.logo = this.logo.bind(this, msg);
-        msg.text = this.text.bind(this, msg);
-        msg.embed = this.embed.bind(this, msg);
-        msg.settings = this.settings.bind(this, msg);
         const parsedArgs = new ArgumentHandler_1.default(this.client, command, args).parse(msg);
         if (!parsedArgs)
             return;
@@ -287,13 +192,12 @@ class CommandHandler {
         }
         if (command.cooldown && command.cooldown.expires && command.cooldown.command) {
             const checkCooldown = this.cooldowns.get(msg.author.id);
-            if (checkCooldown && checkCooldown.expires) {
+            if (checkCooldown === null || checkCooldown === void 0 ? void 0 : checkCooldown.expires) {
                 if (new Date(checkCooldown.expires) < new Date()) {
                     this.cooldowns.delete(msg.author.id);
                     this.cooldowns.set(msg.author.id, { expires: Date.now() + command.cooldown.expires, notified: false, command: 1 });
-                    // @ts-ignore
                 }
-                else if (!checkCooldown.notified && checkCooldown.command >= msg.command.cooldown.command) {
+                else if (!checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
                     checkCooldown.notified = true;
                     this.cooldowns.set(msg.author.id, checkCooldown);
                     return this._client.emit('ratelimited', msg, command, true, checkCooldown.expires);
@@ -302,13 +206,11 @@ class CommandHandler {
                     return this._client.emit('ratelimited', msg, command, false, checkCooldown.expires);
                 }
                 else {
-                    // @ts-ignore
-                    this.cooldowns.set(msg.author.id, { expires: Date.now() + msg.command.cooldown.expires, notified: false, command: ++checkCooldown.command });
+                    this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: ++checkCooldown.command });
                 }
             }
             else {
-                // @ts-ignore
-                this.cooldowns.set(msg.author.id, { expires: Date.now() + msg.command.cooldown.expires, notified: false, command: 1 });
+                this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 });
             }
         }
         if (command.guildOnly && !((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild))

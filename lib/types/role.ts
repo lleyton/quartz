@@ -1,3 +1,4 @@
+import { Role } from 'eris'
 import { Message, Client } from '..'
 
 const filter = (search: string) => {
@@ -6,11 +7,12 @@ const filter = (search: string) => {
 
 class RoleType {
   client: Client
+
   constructor (client: Client) {
     this.client = client
   }
 
-  parse (value: string, msg: Message) {
+  parse (value: string, msg: Message): Role | string {
     if (!value || value.length <= 0 || !msg || !msg.member?.guild || typeof value !== 'string') return undefined
     const match = value.match(/^(?:<@&)?([0-9]+)>?$/)
     if (match) {

@@ -1,13 +1,6 @@
 import Base from './Base'
-import { Cooldown } from '../types'
+import { Cooldown, CommandOptions, Argument, Description } from '../types'
 import { Client } from '..'
-
-interface Argument {
-  key?: string
-  type?: 'user' | 'string' | 'channel' | 'role' | 'message' | 'integer' | 'float' | 'member'
-  prompt?: string | ((msg: any) => void)
-  default?: string | ((msg: any) => void)
-}
 
 /** Command Class */
 class Command extends Base {
@@ -23,12 +16,12 @@ class Command extends Base {
   ownerOnly: boolean
   guildOnly: boolean
   devOnly: boolean
-  description: string
+  description: Description | string
   botPermissions: Function | string | string[]
   userPermissions: Function | string | string[]
   cooldown: Cooldown
 
-  constructor (client: Client, options = {}) {
+  constructor (client: Client, options: CommandOptions = {}) {
     super(client)
     const {
       name = '',
@@ -45,7 +38,7 @@ class Command extends Base {
       },
       botPermissions = this.botPermissions,
       userPermissions = this.userPermissions
-    }: any = options
+    }: CommandOptions = options
 
     this.name = name
     this.aliases = aliases
@@ -63,8 +56,9 @@ class Command extends Base {
   /**
    * Run when command called
    */
-  run () {
+  run (): Promise<void> | void {
     throw new Error(`${this.constructor.name}#run has not been implemented`)
   }
 }
+
 export default Command

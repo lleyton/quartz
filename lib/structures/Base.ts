@@ -1,23 +1,23 @@
-import Eris from 'eris'
 import { Client } from '..'
 import LogHandler from '../handlers/LogHandler'
 
 /** Base Class */
 class Base {
+  private readonly _client: Client
+
   /**
    * Create the eventHandler
    * @param {object} quartzClient - QuartzClient object
    */
-  private _client: Client
-
   constructor (client: Client) {
     this._client = client
   }
+
   /**
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  public get client (): Eris.Client {
+  public get client (): Client {
     return this._client
   }
 
@@ -29,4 +29,5 @@ class Base {
     return this._client.logger
   }
 }
+
 export default Base

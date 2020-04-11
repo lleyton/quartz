@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -10,12 +13,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = require("path");
 const fs_1 = require("fs");
 const eris_1 = require("eris");
+const Message_1 = __importDefault(require("../structures/Message"));
 const quartzEvents = ['missingPermission', 'commandRun', 'ratelimited'];
 /** EventHandler Class */
 class EventHandler {
-    constructor(client, options) {
-        if (!options)
-            options = { directory: './commands', debug: false };
+    /**
+     * Create the eventHandler
+     * @param {object} quartz - QuartzClient object
+     * @param {object} options - eventHandler options
+     */
+    constructor(client, options = { directory: './commands', debug: false }) {
         this._client = client;
         this.directory = options.directory;
         this.debug = options.debug;
@@ -63,29 +70,27 @@ class EventHandler {
      * Runs event
      * @param {object} msg - The message object
      */
-    async _onMessageCreate(msg) {
-        if (!msg.author || msg.author.bot)
+    async _onMessageCreate(_msg) {
+        if (!_msg.author || _msg.author.bot)
             return;
+        const msg = new Message_1.default(_msg, this.client);
         msg.command = null;
-        const prefix = await this._client.commandHandler.prefix(msg);
         const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const content = msg.content.toLowerCase();
-        if (Array.isArray(prefix)) {
-            prefix.forEach(p => escapeRegex(p));
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${prefix.join('|')})\\s*`);
+        if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
+            msg === null || msg === void 0 ? void 0 : msg.prefix.forEach(p => escapeRegex(p));
+            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg === null || msg === void 0 ? void 0 : msg.prefix.join('|')})\\s*`);
             const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
             if (matchedPrefix)
                 msg.prefix = matchedPrefix;
         }
         else {
-            const content = msg.content.toLowerCase();
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(prefix.toLowerCase())})\\s*`);
+            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg === null || msg === void 0 ? void 0 : msg.prefix.toLowerCase())})\\s*`);
             const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
             if (matchedPrefix)
                 msg.prefix = matchedPrefix;
         }
-        msg.content = msg.content.replace(/<@!/g, '<@');
-        if (msg.prefix) {
+        if (msg === null || msg === void 0 ? void 0 : msg.prefix) {
             const args = msg.content.substring(msg.prefix.length).split(' ');
             const label = args.shift().toLowerCase();
             const command = await this._client.commandHandler.getCommand(label);

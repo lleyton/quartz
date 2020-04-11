@@ -6,7 +6,7 @@ class IntegerType {
     this.client = client
   }
 
-  parse (value: string, msg: Message) {
+  parse (value: string, msg: Message): number {
     if (!value || value.length <= 0 || !msg || typeof value !== 'string') return undefined
     const integer = Number.parseInt(value)
     return integer

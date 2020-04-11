@@ -37,4 +37,5 @@ class LogHandler {
     console.log(...message)
   }
 }
+
 export default LogHandler

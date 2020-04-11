@@ -4,23 +4,23 @@ import Eris, { Collection } from 'eris'
 import { ClientOptions } from '../types'
 import Command from '../structures/Command'
 import Client from '../client'
+import Message from '../structures/Message'
 
 const quartzEvents = ['missingPermission', 'commandRun', 'ratelimited']
 
 /** EventHandler Class */
 class EventHandler {
+  private readonly _client: Client
+  directory: string
+  debug: boolean
+  events: Collection<any>
+
   /**
    * Create the eventHandler
    * @param {object} quartz - QuartzClient object
    * @param {object} options - eventHandler options
    */
-  private _client: Client
-  directory: string
-  debug: boolean
-  events: any
-
-  constructor (client: Client, options: ClientOptions['eventHandler']) {
-    if (!options) options = { directory: './commands', debug: false }
+  constructor (client: Client, options: ClientOptions['eventHandler'] = { directory: './commands', debug: false }) {
     this._client = client
     this.directory = options.directory
     this.debug = options.debug
@@ -31,7 +31,7 @@ class EventHandler {
    * Get the eris client object
    * @return {object} The eris client object.
    */
-  get client (): Eris.Client {
+  get client (): Client {
     return this._client
   }
 
@@ -61,25 +61,23 @@ class EventHandler {
    * Runs event
    * @param {object} msg - The message object
    */
-  async _onMessageCreate (msg: Eris.Message): Promise<void> {
-    if (!msg.author || msg.author.bot) return
+  async _onMessageCreate (_msg: Eris.Message): Promise<void> {
+    if (!_msg.author || _msg.author.bot) return
+    const msg = new Message(_msg, this.client)
     msg.command = null
-    const prefix: string | string[] = await this._client.commandHandler.prefix(msg)
-    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const content: string = msg.content.toLowerCase()
-    if (Array.isArray(prefix)) {
-      prefix.forEach(p => escapeRegex(p))
-      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${prefix.join('|')})\\s*`)
+    if (Array.isArray(msg?.prefix)) {
+      msg?.prefix.forEach(p => escapeRegex(p))
+      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix.join('|')})\\s*`)
       const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
       if (matchedPrefix) msg.prefix = matchedPrefix
     } else {
-      const content = msg.content.toLowerCase()
-      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(prefix.toLowerCase())})\\s*`)
+      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg?.prefix.toLowerCase())})\\s*`)
       const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
       if (matchedPrefix) msg.prefix = matchedPrefix
     }
-    msg.content = msg.content.replace(/<@!/g, '<@')
-    if (msg.prefix) {
+    if (msg?.prefix) {
       const args: string[] = msg.content.substring(msg.prefix.length).split(' ')
       const label: string = args.shift().toLowerCase()
       const command: Command = await this._client.commandHandler.getCommand(label)
@@ -90,4 +88,5 @@ class EventHandler {
     return event.run.call(this, msg)
   }
 }
+
 export default EventHandler

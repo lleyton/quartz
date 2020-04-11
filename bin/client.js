@@ -10,21 +10,19 @@ const Embed_1 = __importDefault(require("./structures/Embed"));
 const eris_1 = __importDefault(require("eris"));
 /** QuartzClient Class */
 class Client extends eris_1.default.Client {
-    constructor(token, options, extensions) {
-        if (!token && !process.env.DISCORD_TOKEN)
+    constructor(token = process.env.DISCORD_TOKEN, options = {
+        owner: null, eventHandler: null, commandHandler: null
+    }, extensions = {}) {
+        if (token === '')
             throw new TypeError('Discord Token required!');
-        super(token || process.env.DISCORD_TOKEN, options.eris);
-        if (!options)
-            options = { owner: null, eventHandler: null, commandHandler: null };
+        super(token, options.eris);
+        this._options = options;
         this.owner = options.owner;
         this.logger = new LogHandler_1.default();
         this.eventHandler = new EventHandler_1.default(this, options.eventHandler);
         this.commandHandler = new CommandHandler_1.default(this, options.commandHandler);
         this.embed = () => new Embed_1.default();
-        this.commandHandler = this.commandHandler;
-        this.eventHandler = this.eventHandler;
-        this.logger = this.logger;
-        this.extensions = extensions || {};
+        this.extensions = extensions;
     }
     /**
      * Start the bot
@@ -37,8 +35,8 @@ class Client extends eris_1.default.Client {
         // Bind messageCreate to commandHandler
         this.on('messageCreate', this.commandHandler._onMessageCreate.bind(this.commandHandler));
         // Connect to discord using eris client
-        return this.connect().catch((error) => {
-            throw new Error(`Unable to start: ${error}`);
+        return await this.connect().catch((error) => {
+            throw new Error(`Unable to start: ${error.message}`);
         });
     }
 }

@@ -27,10 +27,10 @@ class ArgumentHandler {
      * @return {array} Returns an array of strings with quotes removed
      */
     quoted() {
-        let quoted = this.string.match(/“(?:\.|(\\\“)|[^\“”\n])*”|(?:[^\s"]+|"[^"]*")/g);
+        let quoted = this.string.match(/“(?:\.|(\\“)|[^“”\n])*”|(?:[^\s"]+|"[^"]*")/g);
         if (quoted && quoted.length > 0) {
             quoted = quoted.map((q) => {
-                if (q.startsWith('"') && q.endsWith('"') || q.startsWith('“') && q.endsWith('”'))
+                if ((q.startsWith('"') && q.endsWith('"')) || (q.startsWith('“') && q.endsWith('”')))
                     return q.slice(1, -1);
                 else
                     return q;
@@ -45,15 +45,15 @@ class ArgumentHandler {
      * @param {string|function} prompt - String or function of the prompt
      * @return {void} runs the prompt
      */
-    prompt(msg, key, prompt) {
+    async prompt(msg, key, prompt) {
         if (typeof prompt === 'string') {
-            return msg.embed(prompt);
+            await msg.embed(prompt);
         }
         else if (typeof prompt === 'function') {
-            return prompt(msg);
+            await prompt(msg);
         }
         else {
-            return msg.embed(`No result for ${key} found.`);
+            await msg.embed(`No result for ${key} found.`);
         }
     }
     /**
@@ -92,11 +92,13 @@ class ArgumentHandler {
                     const defaultValue = this.default(arg, msg);
                     if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg).length <= 0)) {
                         prompt = true;
-                        return this.prompt(msg, arg.key, arg.prompt);
+                        await this.prompt(msg, arg.key, arg.prompt);
+                        return;
                     }
                     if (!args || args.length <= 0) {
                         prompt = true;
-                        return this.prompt(msg, arg.key, arg.prompt);
+                        await this.prompt(msg, arg.key, arg.prompt);
+                        return;
                     }
                     if (this.command.args.slice(-1)[0].key === arg.key) {
                         args.splice(0, this.command.args.length - 1);
@@ -106,7 +108,8 @@ class ArgumentHandler {
                                 result = defaultValue;
                             else {
                                 prompt = true;
-                                return this.prompt(msg, arg.key, arg.prompt);
+                                await this.prompt(msg, arg.key, arg.prompt);
+                                return;
                             }
                         }
                         parsed[arg.key] = result;
@@ -118,7 +121,8 @@ class ArgumentHandler {
                                 result = defaultValue;
                             else {
                                 prompt = true;
-                                return this.prompt(msg, arg.key, arg.prompt);
+                                await this.prompt(msg, arg.key, arg.prompt);
+                                return;
                             }
                         }
                         parsed[arg.key] = result;

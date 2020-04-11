@@ -2,11 +2,13 @@ import Eris from 'eris'
 
 declare module 'quartz' {
   export interface Message extends Eris.Message {
-    guild?: Eris.Guild,
-    settings?(): any,
-    color?(): any,
-    text?(): any,
-    logo?(): any
+    guild?: Eris.Guild
+    command?: Command
+    embed?(message: string, options?: any): Promise<Eris.Message>
+    settings?(): any
+    color?(): string
+    text?(): string
+    logo?(): string
   }
 
   export interface ClientOptions {
@@ -15,7 +17,7 @@ declare module 'quartz' {
     eventHandler?: {
       directory: string
       debug?: boolean
-    },
+    }
     commandHandler: {
       prefix?: any
       directory: string
@@ -29,15 +31,15 @@ declare module 'quartz' {
   }
 
   export interface EmbedOptions {
-    reply: boolean,
-    bold: boolean,
-    color: any,
-    footer: boolean,
+    reply: boolean
+    bold: boolean
+    color: any
+    footer: boolean
     text: boolean
   }
 
   export interface Cooldown {
-    expires: number,
+    expires: number
     command: number
   }
 
@@ -60,7 +62,7 @@ declare module 'quartz' {
     modules: any
     aliases: any
     cooldowns: any
-    constructor (quartz: any, options: ClientOptions['commandHandler'])  
+    constructor (quartz: any, options: ClientOptions['commandHandler'])
     quartz(): Client
     client(): any
     getCommand(commandName: string): Command
@@ -79,7 +81,7 @@ declare module 'quartz' {
     directory: string
     debug: boolean
     events: any
-    constructor (quartz: any, options: ClientOptions['eventHandler'])  
+    constructor (quartz: any, options: ClientOptions['eventHandler'])
     quartz(): Client
     client(): any
     loadEvents(): void
@@ -127,35 +129,39 @@ declare module 'quartz' {
   }
 
   export class Command extends Base {
-    client: any
-    constructor (client: any, options: CommandOptions)
+    client: Client
+    constructor (client: Client, options: CommandOptions)
     userPermissions?(...args: any): Promise<any> | null
-    run(...args: any): Promise<any>
+    run(...args: any): Promise<void> | void
   }
 
   export class Embed {
     fields: any[]
     url: string
     author: {
-      name: string,
-      icon_url: string,
+      name: string
+      icon_url: string
       url: string
     }
+
     color: string
     description: string
     file: string
     footer: {
-      text: string,
+      text: string
       icon_url: string
     }
+
     image: {
       url: string
     }
+
     date: any
     title: string
     thumbnail: {
       url: string
     }
+
     constructor(data: any)
     setAuthor(name: string, icon: string, url: string): void
     setColor(color: any): void
@@ -180,14 +186,6 @@ declare module 'quartz' {
     run(...args: any): Promise<any>
   }
 
-  export interface Message extends Eris.Message {
-    guild: Eris.Guild
-    embed(message: string, options?: any): Promise<Eris.Message>
-    color(): string
-    text(): string
-    logo(): string
-    settings(): any
-  }
   export class ChannelType {
     client: any
     parse(value: string, msg: any): any

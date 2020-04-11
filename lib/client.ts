@@ -13,6 +13,7 @@ class Client extends Eris.Client {
    * @param {object} options - QuartzClient options
    * @param {object} eris - Eris options
    */
+  _options: ClientOptions
   owner: string | null
   logger: LogHandler
   eventHandler: EventHandler
@@ -21,25 +22,24 @@ class Client extends Eris.Client {
   [name: string]: any
   embed: () => Embed
 
-  constructor (token: string, options: ClientOptions, extensions: any) {
-    if (!token && !process.env.DISCORD_TOKEN) throw new TypeError('Discord Token required!')
-    super(token || process.env.DISCORD_TOKEN, options.eris)
-    if (!options) options = { owner: null, eventHandler: null, commandHandler: null }
+  constructor (token: string | undefined = process.env.DISCORD_TOKEN, options: ClientOptions = {
+    owner: null, eventHandler: null, commandHandler: null
+  }, extensions: any = {}) {
+    if (token === '') throw new TypeError('Discord Token required!')
+    super(token, options.eris)
+    this._options = options
     this.owner = options.owner
     this.logger = new LogHandler()
     this.eventHandler = new EventHandler(this, options.eventHandler)
     this.commandHandler = new CommandHandler(this, options.commandHandler)
     this.embed = () => new Embed()
-    this.commandHandler = this.commandHandler
-    this.eventHandler = this.eventHandler
-    this.logger = this.logger
-    this.extensions = extensions || {}
+    this.extensions = extensions
   }
 
   /**
    * Start the bot
    */
-  public async start () {
+  public async start (): Promise<void> {
     // Load events using eventHandler
     await this.eventHandler.loadEvents()
     // Load commands using commandHandler
@@ -47,11 +47,12 @@ class Client extends Eris.Client {
 
     // Bind messageCreate to commandHandler
     this.on('messageCreate', this.commandHandler._onMessageCreate.bind(this.commandHandler))
-  
+
     // Connect to discord using eris client
-    return this.connect().catch((error: any) => {
-      throw new Error(`Unable to start: ${error}`)
-    }) 
+    return await this.connect().catch((error: Error) => {
+      throw new Error(`Unable to start: ${error.message}`)
+    })
   }
 }
+
 export default Client

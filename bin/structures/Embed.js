@@ -26,7 +26,7 @@ class Embed {
             color = parseInt(color.replace('#', ''), 16);
         if (color < 0 || color > 0xFFFFFF)
             throw new RangeError('Color range is invaild.');
-        else if (color && isNaN(color))
+        else if (isNaN(color))
             throw new TypeError('Unable to convert color.');
         this.color = color;
         return this;
@@ -48,10 +48,10 @@ class Embed {
     addField(name, value, inline = false) {
         if (this.fields.length >= 25)
             return this;
-        else if (!name)
-            return this;
-        else if (!value)
-            return false;
+        else if (name === '')
+            throw new TypeError('Missing name field.');
+        else if (value === '')
+            throw new TypeError('Missing value field.');
         this.fields.push({ name: name.toString().substring(0, 256), value: value.toString().substring(0, 1024), inline });
         return this;
     }
