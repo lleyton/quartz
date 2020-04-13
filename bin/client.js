@@ -12,7 +12,7 @@ const eris_1 = __importDefault(require("eris"));
 class Client extends eris_1.default.Client {
     constructor(token = process.env.DISCORD_TOKEN, options = {
         owner: null, eventHandler: null, commandHandler: null
-    }, extensions = {}) {
+    }) {
         var _a, _b;
         if (token === '')
             throw new TypeError('Discord Token required!');
@@ -23,7 +23,6 @@ class Client extends eris_1.default.Client {
         this.eventHandler = new EventHandler_1.default(this, options.eventHandler);
         this.commandHandler = new CommandHandler_1.default(this, options.commandHandler);
         this.embed = () => new Embed_1.default();
-        this.extensions = extensions;
     }
     /**
      * Start the bot

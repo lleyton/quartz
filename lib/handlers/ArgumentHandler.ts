@@ -2,6 +2,7 @@ import Eris from 'eris'
 import Command from '../structures/Command'
 import Message from '../structures/Message'
 import { Argument } from '../typings'
+import path from 'path'
 
 /** ArgumentHandler Class */
 class ArgumentHandler {
@@ -87,12 +88,11 @@ class ArgumentHandler {
         let prompt = false
         await this.command.args.forEach(async (arg: Argument) => {
           if (arg.key && arg.type && this.types.includes(arg.type)) {
-            console.log(arg)
-            const CustomType = await import(`../types/${arg.type}`)
-            console.log(CustomType)
+            let CustomType: any = await import(path.join('..', 'types', arg.type))
+            if (typeof CustomType !== 'function') CustomType = CustomType.default
             const type = new CustomType(this.client)
             const defaultValue = this.default(arg, msg)
-            if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg) <= 0)) {
+            if (defaultValue === 'undefined' && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg) <= 0)) {
               prompt = true
               await this.prompt(msg, arg.key, arg.prompt)
               return

@@ -53,7 +53,7 @@ declare module 'quartz' {
     logger: LogHandler
     eventHandler: EventHandler
     commandHandler: CommandHandler
-    constructor(token?: string, options?: ClientOptions, extensions?: any)
+    constructor(token?: string, options?: ClientOptions)
     start(): Promise<void> | void
     [name: string]: any
   }
@@ -102,9 +102,9 @@ declare module 'quartz' {
     examples?: string[]
   }
 
-  interface Args {
+  interface Argument {
     key?: string
-    type?: string
+    type?: 'user' | 'string' | 'channel' | 'role' | 'message' | 'integer' | 'float' | 'member'
     prompt?: string | ((msg: any) => void)
     default?: string | ((msg: any) => void)
   }
@@ -112,7 +112,7 @@ declare module 'quartz' {
   interface CommandOptions {
     name: string
     aliases?: string[]
-    args?: Args[]
+    args?: Argument[]
     channel?: string
     ownerOnly?: boolean
     guildOnly?: boolean

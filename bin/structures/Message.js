@@ -7,7 +7,6 @@ const eris_1 = __importDefault(require("eris"));
 const __1 = require("..");
 const util_1 = __importDefault(require("util"));
 const prefix = (msg, _prefix) => {
-    console.log(util_1.default.types.isAsyncFunction(_prefix));
     if (typeof _prefix === 'function') {
         if (util_1.default.types.isAsyncFunction(_prefix)) {
             return _prefix(msg)
@@ -65,20 +64,22 @@ const logo = (msg, _logo) => {
 };
 class Message extends eris_1.default.Message {
     constructor(msg, client) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        var _a;
         super({
             id: msg.id,
             channel_id: msg.channel.id,
             author: msg.author
         }, client);
         this.client = client;
-        const _prefix = prefix(msg, (_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.prefix);
-        this.guild = ((_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild) || null;
-        this.prefix = _prefix;
-        this.color = color(msg, (_e = (_d = this.client._options) === null || _d === void 0 ? void 0 : _d.commandHandler) === null || _e === void 0 ? void 0 : _e.color);
-        this.text = text(msg, (_g = (_f = this.client._options) === null || _f === void 0 ? void 0 : _f.commandHandler) === null || _g === void 0 ? void 0 : _g.text);
-        this.logo = logo(msg, (_j = (_h = this.client._options) === null || _h === void 0 ? void 0 : _h.commandHandler) === null || _j === void 0 ? void 0 : _j.logo);
+        this.guild = ((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild) || null;
         this.content = msg.content.replace(/<@!/g, '<@');
+    }
+    async _configure() {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        this.prefix = await prefix(this, (_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.prefix);
+        this.color = await color(this, (_d = (_c = this.client._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.color);
+        this.text = await text(this, (_f = (_e = this.client._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.text);
+        this.logo = await logo(this, (_h = (_g = this.client._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.logo);
     }
     /**
      * Return a embed

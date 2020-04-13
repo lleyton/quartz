@@ -19,7 +19,7 @@ const Message_1 = __importDefault(require("../structures/Message"));
 class CommandHandler {
     /**
      * Create the commandHandler
-     * @param {object} quartz - QuartzClient object
+     * @param {object} client - QuartzClient object
      * @param {object} options - commandHandler options
      */
     constructor(client, options) {
@@ -28,16 +28,11 @@ class CommandHandler {
         this._client = client;
         this.directory = options.directory || './commands';
         this.debug = options.debug || false;
-        this._prefix = options.prefix || '!';
         this.defaultCooldown = options.defaultCooldown || 10000;
         this.commands = new eris_1.Collection(undefined);
         this.modules = new eris_1.Collection(undefined);
         this.aliases = new eris_1.Collection(undefined);
         this.cooldowns = new eris_1.Collection(undefined);
-        this._settings = options.settings || undefined;
-        this._text = options.text || client.user.username;
-        this._logo = options.logo || client.user.avatarURL;
-        this._color = options.color || undefined;
     }
     /**
      * Get the eris client object
@@ -132,6 +127,7 @@ class CommandHandler {
             if (!_msg.author || _msg.author.bot || !((_a = _msg.member) === null || _a === void 0 ? void 0 : _a.guild))
                 return;
             const msg = new Message_1.default(_msg, this.client);
+            await msg._configure();
             const content = msg.content.toLowerCase();
             if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
                 const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')})\\s*`);
@@ -161,7 +157,9 @@ class CommandHandler {
                 return;
             // @ts-ignore
             msg.command = command;
-            const parsedArgs = await new ArgumentHandler_1.default(this.client, command, args).parse(msg);
+            const argumentHandler = new ArgumentHandler_1.default(this.client, command, args);
+            const parsedArgs = await argumentHandler.parse(msg);
+            console.log(parsedArgs, 'args');
             if (!parsedArgs)
                 return;
             // @ts-ignore

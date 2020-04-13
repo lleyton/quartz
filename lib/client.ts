@@ -18,13 +18,12 @@ class Client extends Eris.Client {
   logger: LogHandler
   eventHandler: EventHandler
   commandHandler: CommandHandler
-  extensions: any
   [name: string]: any
   embed: () => Embed
 
   constructor (token: string | undefined = process.env.DISCORD_TOKEN, options: ClientOptions = {
     owner: null, eventHandler: null, commandHandler: null
-  }, extensions: any = {}) {
+  }) {
     if (token === '') throw new TypeError('Discord Token required!')
     super(token, options.eris)
     this._options = options
@@ -33,7 +32,6 @@ class Client extends Eris.Client {
     this.eventHandler = new EventHandler(this, options.eventHandler)
     this.commandHandler = new CommandHandler(this, options.commandHandler)
     this.embed = () => new Embed()
-    this.extensions = extensions
   }
 
   /**

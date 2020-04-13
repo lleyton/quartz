@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -7,6 +10,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const path_1 = __importDefault(require("path"));
 /** ArgumentHandler Class */
 class ArgumentHandler {
     /**
@@ -88,12 +92,12 @@ class ArgumentHandler {
                 let prompt = false;
                 await this.command.args.forEach(async (arg) => {
                     if (arg.key && arg.type && this.types.includes(arg.type)) {
-                        console.log(arg);
-                        const CustomType = await Promise.resolve().then(() => __importStar(require(`../types/${arg.type}`)));
-                        console.log(CustomType);
+                        let CustomType = await Promise.resolve().then(() => __importStar(require(path_1.default.join('..', 'types', arg.type))));
+                        if (typeof CustomType !== 'function')
+                            CustomType = CustomType.default;
                         const type = new CustomType(this.client);
                         const defaultValue = this.default(arg, msg);
-                        if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg) <= 0)) {
+                        if (defaultValue === 'undefined' && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg) <= 0)) {
                             prompt = true;
                             await this.prompt(msg, arg.key, arg.prompt);
                             return;

@@ -3,8 +3,7 @@ import { Client, Embed } from '..'
 import { EmbedOptions } from '../typings'
 import util from 'util'
 
-const prefix = (msg: Eris.Message, _prefix: Function | string | string[]): string | string[] => {
-  console.log(util.types.isAsyncFunction(_prefix))
+const prefix = (msg: Message, _prefix: Function | string | string[]): string | string[] => {
   if (typeof _prefix === 'function') {
     if (util.types.isAsyncFunction(_prefix)) {
       return _prefix(msg)
@@ -17,7 +16,7 @@ const prefix = (msg: Eris.Message, _prefix: Function | string | string[]): strin
   } else return _prefix
 }
 
-const color = (msg: Eris.Message, _color: Function | string | number): string | number => {
+const color = (msg: Message, _color: Function | string | number): string | number => {
   if (typeof _color === 'function') {
     if (util.types.isAsyncFunction(_color)) {
       return _color(msg)
@@ -30,7 +29,7 @@ const color = (msg: Eris.Message, _color: Function | string | number): string | 
   } else return _color
 }
 
-const text = (msg: Eris.Message, _text: Function | string): string => {
+const text = (msg: Message, _text: Function | string): string => {
   if (typeof _text === 'function') {
     if (util.types.isAsyncFunction(_text)) {
       return _text(msg)
@@ -43,7 +42,7 @@ const text = (msg: Eris.Message, _text: Function | string): string => {
   } else return _text
 }
 
-const logo = (msg: Eris.Message, _logo: Function | string): string => {
+const logo = (msg: Message, _logo: Function | string): string => {
   if (typeof _logo === 'function') {
     if (util.types.isAsyncFunction(_logo)) {
       return _logo(msg)
@@ -57,8 +56,6 @@ const logo = (msg: Eris.Message, _logo: Function | string): string => {
 }
 
 class Message extends Eris.Message {
-  private readonly _settings: Function | any
-
   readonly client: Client
   color: string | number
   text: string
@@ -74,13 +71,15 @@ class Message extends Eris.Message {
       author: msg.author
     }, client)
     this.client = client
-    const _prefix = prefix(msg, this.client._options?.commandHandler?.prefix)
     this.guild = msg.member?.guild || null
-    this.prefix = _prefix
-    this.color = color(msg, this.client._options?.commandHandler?.color)
-    this.text = text(msg, this.client._options?.commandHandler?.text)
-    this.logo = logo(msg, this.client._options?.commandHandler?.logo)
     this.content = msg.content.replace(/<@!/g, '<@')
+  }
+
+  async _configure (): Promise<void> {
+    this.prefix = await prefix(this, this.client._options?.commandHandler?.prefix)
+    this.color = await color(this, this.client._options?.commandHandler?.color)
+    this.text = await text(this, this.client._options?.commandHandler?.text)
+    this.logo = await logo(this, this.client._options?.commandHandler?.logo)
   }
 
   /**

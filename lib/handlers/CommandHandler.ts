@@ -10,11 +10,6 @@ import Message from '../structures/Message'
 /** CommandHandler Class */
 class CommandHandler {
   private readonly _client: Client
-  private readonly _prefix: Function | string | string[]
-  private readonly _settings: Function | any
-  private readonly _text: Function | string
-  private readonly _logo: Function | string
-  private readonly _color: Function | string | number
   directory: string
   debug: boolean
   defaultCooldown: number
@@ -25,7 +20,7 @@ class CommandHandler {
 
   /**
    * Create the commandHandler
-   * @param {object} quartz - QuartzClient object
+   * @param {object} client - QuartzClient object
    * @param {object} options - commandHandler options
    */
   constructor (client: Client, options: ClientOptions['commandHandler']) {
@@ -33,16 +28,11 @@ class CommandHandler {
     this._client = client
     this.directory = options.directory || './commands'
     this.debug = options.debug || false
-    this._prefix = options.prefix || '!'
     this.defaultCooldown = options.defaultCooldown || 10000
     this.commands = new Collection(undefined)
     this.modules = new Collection(undefined)
     this.aliases = new Collection(undefined)
     this.cooldowns = new Collection(undefined)
-    this._settings = options.settings || undefined
-    this._text = options.text || client.user.username
-    this._logo = options.logo || client.user.avatarURL
-    this._color = options.color || undefined
   }
 
   /**
@@ -129,6 +119,7 @@ class CommandHandler {
     try {
       if (!_msg.author || _msg.author.bot || !_msg.member?.guild) return
       const msg = new Message(_msg, this.client)
+      await msg._configure()
       const content = msg.content.toLowerCase()
       if (Array.isArray(msg?.prefix)) {
         const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
@@ -151,7 +142,9 @@ class CommandHandler {
       if (!command) return
       // @ts-ignore
       msg.command = command
-      const parsedArgs = await new ArgumentHandler(this.client, command, args).parse(msg)
+      const argumentHandler = new ArgumentHandler(this.client, command, args)
+      const parsedArgs = await argumentHandler.parse(msg)
+      console.log(parsedArgs, 'args')
       if (!parsedArgs) return
       // @ts-ignore
       const channelPermissions: Eris.Permission = msg.channel.permissionsOf(this.client.user.id)

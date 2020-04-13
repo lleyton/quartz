@@ -65,16 +65,15 @@ class EventHandler {
     try {
       if (!_msg.author || _msg.author.bot) return
       const msg = new Message(_msg, this.client)
+      await msg._configure()
       msg.command = null
-      const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const content: string = msg.content.toLowerCase()
       if (Array.isArray(msg?.prefix)) {
-        msg?.prefix?.map(p => escapeRegex(p))
         const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
         const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
         if (matchedPrefix) msg.prefix = matchedPrefix
       } else {
-        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg?.prefix?.toLowerCase())})\\s*`)
+        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.toLowerCase()})\\s*`)
         const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
         if (matchedPrefix) msg.prefix = matchedPrefix
       }
