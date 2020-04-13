@@ -4,23 +4,55 @@ import { EmbedOptions } from '../typings'
 import util from 'util'
 
 const prefix = (msg: Eris.Message, _prefix: Function | string | string[]): string | string[] => {
-  if (typeof _prefix !== 'function') return _prefix
-  else return _prefix(msg)
+  if (typeof _prefix === 'function') {
+    if (util.types.isAsyncFunction(_prefix)) {
+      return _prefix(msg)
+        .then((prefix: string | string[]) => prefix)
+        .catch((error: Error) => {
+          throw new Error(error.message)
+        })
+    }
+    return _prefix(msg)
+  } else return _prefix
 }
 
 const color = (msg: Eris.Message, _color: Function | string | number): string | number => {
-  if (typeof _color !== 'function') return _color
-  else return _color(msg)
+  if (typeof _color === 'function') {
+    if (util.types.isAsyncFunction(_color)) {
+      return _color(msg)
+        .then((color: string | number) => color)
+        .catch((error: Error) => {
+          throw new Error(error.message)
+        })
+    }
+    return _color(msg)
+  } else return _color
 }
 
 const text = (msg: Eris.Message, _text: Function | string): string => {
-  if (typeof _text !== 'function') return _text
-  else return _text(msg)
+  if (typeof _text === 'function') {
+    if (util.types.isAsyncFunction(_text)) {
+      return _text(msg)
+        .then((text: string) => text)
+        .catch((error: Error) => {
+          throw new Error(error.message)
+        })
+    }
+    return _text(msg)
+  } else return _text
 }
 
 const logo = (msg: Eris.Message, _logo: Function | string): string => {
-  if (typeof _logo !== 'function') return _logo
-  else return _logo(msg)
+  if (typeof _logo === 'function') {
+    if (util.types.isAsyncFunction(_logo)) {
+      return _logo(msg)
+        .then((logo: string) => logo)
+        .catch((error: Error) => {
+          throw new Error(error.message)
+        })
+    }
+    return _logo(msg)
+  } else return _logo
 }
 
 class Message extends Eris.Message {
@@ -85,16 +117,16 @@ class Message extends Eris.Message {
    * @return {object} The settings object
    */
   settings (): any {
-    if (typeof this.client._options?.commandHandler?.settings !== 'function') {
-      if (util.types.isAsyncFunction(this._settings)) {
+    if (typeof this.client._options?.commandHandler?.settings === 'function') {
+      if (util.types.isAsyncFunction(this.client._options?.commandHandler?.settings)) {
         return this.client._options?.commandHandler?.settings(this)
           .then((settings: any) => settings)
           .catch((error: Error) => {
             throw new Error(error.message)
           })
       }
-      return this.client._options?.commandHandler?.settings
-    } else return this.client._options?.commandHandler?.settings(this)
+      return this.client._options?.commandHandler?.settings(this)
+    } else return this.client._options?.commandHandler?.settings
   }
 }
 

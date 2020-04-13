@@ -7,28 +7,60 @@ const eris_1 = __importDefault(require("eris"));
 const __1 = require("..");
 const util_1 = __importDefault(require("util"));
 const prefix = (msg, _prefix) => {
-    if (typeof _prefix !== 'function')
-        return _prefix;
-    else
+    if (typeof _prefix === 'function') {
+        if (util_1.default.types.isAsyncFunction(_prefix)) {
+            return _prefix(msg)
+                .then((prefix) => prefix)
+                .catch((error) => {
+                throw new Error(error.message);
+            });
+        }
         return _prefix(msg);
+    }
+    else
+        return _prefix;
 };
 const color = (msg, _color) => {
-    if (typeof _color !== 'function')
-        return _color;
-    else
+    if (typeof _color === 'function') {
+        if (util_1.default.types.isAsyncFunction(_color)) {
+            return _color(msg)
+                .then((color) => color)
+                .catch((error) => {
+                throw new Error(error.message);
+            });
+        }
         return _color(msg);
+    }
+    else
+        return _color;
 };
 const text = (msg, _text) => {
-    if (typeof _text !== 'function')
-        return _text;
-    else
+    if (typeof _text === 'function') {
+        if (util_1.default.types.isAsyncFunction(_text)) {
+            return _text(msg)
+                .then((text) => text)
+                .catch((error) => {
+                throw new Error(error.message);
+            });
+        }
         return _text(msg);
+    }
+    else
+        return _text;
 };
 const logo = (msg, _logo) => {
-    if (typeof _logo !== 'function')
-        return _logo;
-    else
+    if (typeof _logo === 'function') {
+        if (util_1.default.types.isAsyncFunction(_logo)) {
+            return _logo(msg)
+                .then((logo) => logo)
+                .catch((error) => {
+                throw new Error(error.message);
+            });
+        }
         return _logo(msg);
+    }
+    else
+        return _logo;
 };
 class Message extends eris_1.default.Message {
     constructor(msg, client) {
@@ -88,17 +120,17 @@ class Message extends eris_1.default.Message {
      * @return {object} The settings object
      */
     settings() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
-        if (typeof ((_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.settings) !== 'function') {
-            if (util_1.default.types.isAsyncFunction(this._settings)) {
-                return (_d = (_c = this.client._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.settings(this).then((settings) => settings).catch((error) => {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+        if (typeof ((_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.settings) === 'function') {
+            if (util_1.default.types.isAsyncFunction((_d = (_c = this.client._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.settings)) {
+                return (_f = (_e = this.client._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.settings(this).then((settings) => settings).catch((error) => {
                     throw new Error(error.message);
                 });
             }
-            return (_f = (_e = this.client._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.settings;
+            return (_h = (_g = this.client._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.settings(this);
         }
         else
-            return (_h = (_g = this.client._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.settings(this);
+            return (_k = (_j = this.client._options) === null || _j === void 0 ? void 0 : _j.commandHandler) === null || _k === void 0 ? void 0 : _k.settings;
     }
 }
 exports.default = Message;
