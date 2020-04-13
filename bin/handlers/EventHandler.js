@@ -71,35 +71,41 @@ class EventHandler {
      * @param {object} msg - The message object
      */
     async _onMessageCreate(_msg) {
-        if (!_msg.author || _msg.author.bot)
-            return;
-        const msg = new Message_1.default(_msg, this.client);
-        msg.command = null;
-        const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const content = msg.content.toLowerCase();
-        if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
-            msg === null || msg === void 0 ? void 0 : msg.prefix.forEach(p => escapeRegex(p));
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg === null || msg === void 0 ? void 0 : msg.prefix.join('|')})\\s*`);
-            const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
-            if (matchedPrefix)
-                msg.prefix = matchedPrefix;
+        var _a, _b, _c;
+        try {
+            if (!_msg.author || _msg.author.bot)
+                return;
+            const msg = new Message_1.default(_msg, this.client);
+            msg.command = null;
+            const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const content = msg.content.toLowerCase();
+            if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
+                (_a = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _a === void 0 ? void 0 : _a.map(p => escapeRegex(p));
+                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')})\\s*`);
+                const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
+                if (matchedPrefix)
+                    msg.prefix = matchedPrefix;
+            }
+            else {
+                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex((_c = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _c === void 0 ? void 0 : _c.toLowerCase())})\\s*`);
+                const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
+                if (matchedPrefix)
+                    msg.prefix = matchedPrefix;
+            }
+            if (msg === null || msg === void 0 ? void 0 : msg.prefix) {
+                const args = msg.content.substring(msg.prefix.length).split(' ');
+                const label = args.shift().toLowerCase();
+                const command = await this._client.commandHandler.getCommand(label);
+                // @ts-ignore
+                if (command)
+                    msg.command = command;
+            }
+            const event = this.events.get('messageCreate');
+            return event.run.call(this, msg);
         }
-        else {
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg === null || msg === void 0 ? void 0 : msg.prefix.toLowerCase())})\\s*`);
-            const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
-            if (matchedPrefix)
-                msg.prefix = matchedPrefix;
+        catch (error) {
+            throw new Error(error);
         }
-        if (msg === null || msg === void 0 ? void 0 : msg.prefix) {
-            const args = msg.content.substring(msg.prefix.length).split(' ');
-            const label = args.shift().toLowerCase();
-            const command = await this._client.commandHandler.getCommand(label);
-            // @ts-ignore
-            if (command)
-                msg.command = command;
-        }
-        const event = this.events.get('messageCreate');
-        return event.run.call(this, msg);
     }
 }
 exports.default = EventHandler;

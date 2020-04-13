@@ -128,127 +128,132 @@ class CommandHandler {
      */
     async _onMessageCreate(_msg) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-        if (!_msg.author || _msg.author.bot || !((_a = _msg.member) === null || _a === void 0 ? void 0 : _a.guild))
-            return;
-        const msg = new Message_1.default(_msg, this.client);
-        const content = msg.content.toLowerCase();
-        if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')})\\s*`);
-            if (!prefixRegex.test(content))
-                return undefined;
-            const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
-            if (!matchedPrefix)
-                return undefined;
-            msg.prefix = matchedPrefix;
-        }
-        else {
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_c = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _c === void 0 ? void 0 : _c.toLowerCase()})\\s*`);
-            if (!prefixRegex.test(content))
+        try {
+            if (!_msg.author || _msg.author.bot || !((_a = _msg.member) === null || _a === void 0 ? void 0 : _a.guild))
                 return;
-            const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
-            if (!matchedPrefix)
-                return;
-            msg.prefix = matchedPrefix;
-        }
-        if (!msg.prefix)
-            return;
-        msg.content = msg.content.replace(/<@!/g, '<@');
-        const args = msg.content.slice(msg.prefix.length).trim().split(/ +/);
-        const label = args.shift().toLowerCase();
-        const command = this.getCommand(label);
-        if (!command)
-            return;
-        // @ts-ignore
-        msg.command = command;
-        const parsedArgs = await new ArgumentHandler_1.default(this.client, command, args).parse(msg);
-        if (!parsedArgs)
-            return;
-        // @ts-ignore
-        const channelPermissions = msg.channel.permissionsOf(this.client.user.id);
-        if (!channelPermissions.has('sendMessages') || !channelPermissions.has('embedLinks'))
-            return;
-        if (command.botPermissions) {
-            if (typeof command.botPermissions === 'function') {
-                const missing = await command.botPermissions(msg);
-                if (missing != null)
-                    return this._client.emit('missingPermission', msg, command, missing);
+            const msg = new Message_1.default(_msg, this.client);
+            const content = msg.content.toLowerCase();
+            if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
+                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')})\\s*`);
+                if (!prefixRegex.test(content))
+                    return undefined;
+                const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
+                if (!matchedPrefix)
+                    return undefined;
+                msg.prefix = matchedPrefix;
             }
-            else if ((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild) {
-                const botPermissions = (_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild.members.get(this.client.user.id).permission;
-                if (command.botPermissions instanceof Array) {
-                    for (const p of command.botPermissions) {
-                        if (!botPermissions.has(p))
-                            return this._client.emit('missingPermission', msg, command, p);
+            else {
+                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_c = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _c === void 0 ? void 0 : _c.toLowerCase()})\\s*`);
+                if (!prefixRegex.test(content))
+                    return;
+                const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
+                if (!matchedPrefix)
+                    return;
+                msg.prefix = matchedPrefix;
+            }
+            if (!msg.prefix)
+                return;
+            msg.content = msg.content.replace(/<@!/g, '<@');
+            const args = msg.content.slice(msg.prefix.length).trim().split(/ +/);
+            const label = args.shift().toLowerCase();
+            const command = this.getCommand(label);
+            if (!command)
+                return;
+            // @ts-ignore
+            msg.command = command;
+            const parsedArgs = await new ArgumentHandler_1.default(this.client, command, args).parse(msg);
+            if (!parsedArgs)
+                return;
+            // @ts-ignore
+            const channelPermissions = msg.channel.permissionsOf(this.client.user.id);
+            if (!channelPermissions.has('sendMessages') || !channelPermissions.has('embedLinks'))
+                return;
+            if (command.botPermissions) {
+                if (typeof command.botPermissions === 'function') {
+                    const missing = await command.botPermissions(msg);
+                    if (missing != null)
+                        return this._client.emit('missingPermission', msg, command, missing);
+                }
+                else if ((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild) {
+                    const botPermissions = (_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild.members.get(this.client.user.id).permission;
+                    if (command.botPermissions instanceof Array) {
+                        for (const p of command.botPermissions) {
+                            if (!botPermissions.has(p))
+                                return this._client.emit('missingPermission', msg, command, p);
+                        }
+                    }
+                    else {
+                        if (!botPermissions.has(command.botPermissions))
+                            return this._client.emit('missingPermission', msg, command, command.botPermissions);
+                    }
+                }
+            }
+            if (command.cooldown && command.cooldown.expires && command.cooldown.command) {
+                const checkCooldown = this.cooldowns.get(msg.author.id);
+                if (checkCooldown === null || checkCooldown === void 0 ? void 0 : checkCooldown.expires) {
+                    if (new Date(checkCooldown.expires) < new Date()) {
+                        this.cooldowns.delete(msg.author.id);
+                        this.cooldowns.set(msg.author.id, { expires: Date.now() + command.cooldown.expires, notified: false, command: 1 });
+                    }
+                    else if (!checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
+                        checkCooldown.notified = true;
+                        this.cooldowns.set(msg.author.id, checkCooldown);
+                        return this._client.emit('ratelimited', msg, command, true, checkCooldown.expires);
+                    }
+                    else if (checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
+                        return this._client.emit('ratelimited', msg, command, false, checkCooldown.expires);
+                    }
+                    else {
+                        this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: ++checkCooldown.command });
                     }
                 }
                 else {
-                    if (!botPermissions.has(command.botPermissions))
-                        return this._client.emit('missingPermission', msg, command, command.botPermissions);
+                    this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 });
                 }
             }
-        }
-        if (command.cooldown && command.cooldown.expires && command.cooldown.command) {
-            const checkCooldown = this.cooldowns.get(msg.author.id);
-            if (checkCooldown === null || checkCooldown === void 0 ? void 0 : checkCooldown.expires) {
-                if (new Date(checkCooldown.expires) < new Date()) {
-                    this.cooldowns.delete(msg.author.id);
-                    this.cooldowns.set(msg.author.id, { expires: Date.now() + command.cooldown.expires, notified: false, command: 1 });
+            if (command.guildOnly && !((_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild))
+                return;
+            if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild)
+                msg.guild = (_h = msg.member) === null || _h === void 0 ? void 0 : _h.guild;
+            if (command.ownerOnly && msg.author.id !== this._client.owner)
+                return;
+            if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner)
+                return this.client.embeds.embed(msg, `<@${msg.author.id}>, **Currently Unavailable:** The bot is currently unavailable.`);
+            if (command.userPermissions) {
+                if (typeof command.userPermissions === 'function') {
+                    const missing = await command.userPermissions(msg);
+                    if (missing != null) {
+                        this._client.emit('missingPermission', msg, command, missing);
+                        return;
+                    }
                 }
-                else if (!checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
-                    checkCooldown.notified = true;
-                    this.cooldowns.set(msg.author.id, checkCooldown);
-                    return this._client.emit('ratelimited', msg, command, true, checkCooldown.expires);
-                }
-                else if (checkCooldown.notified && checkCooldown.command >= command.cooldown.command) {
-                    return this._client.emit('ratelimited', msg, command, false, checkCooldown.expires);
-                }
-                else {
-                    this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: ++checkCooldown.command });
-                }
-            }
-            else {
-                this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 });
-            }
-        }
-        if (command.guildOnly && !((_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild))
-            return;
-        if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild)
-            msg.guild = (_h = msg.member) === null || _h === void 0 ? void 0 : _h.guild;
-        if (command.ownerOnly && msg.author.id !== this._client.owner)
-            return;
-        if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner)
-            return this.client.embeds.embed(msg, `<@${msg.author.id}>, **Currently Unavailable:** The bot is currently unavailable.`);
-        if (command.userPermissions) {
-            if (typeof command.userPermissions === 'function') {
-                const missing = await command.userPermissions(msg);
-                if (missing != null) {
-                    this._client.emit('missingPermission', msg, command, missing);
-                    return;
-                }
-            }
-            else if ((_j = msg.member) === null || _j === void 0 ? void 0 : _j.guild) {
-                if (Array.isArray(command.userPermissions)) {
-                    command.userPermissions.forEach((userPermission) => {
-                        const permission = msg.member.permission.has(userPermission);
+                else if ((_j = msg.member) === null || _j === void 0 ? void 0 : _j.guild) {
+                    if (Array.isArray(command.userPermissions)) {
+                        command.userPermissions.forEach((userPermission) => {
+                            const permission = msg.member.permission.has(userPermission);
+                            if (!permission)
+                                return this._client.emit('missingPermission', msg, command, userPermission);
+                        });
+                    }
+                    else {
+                        const permission = msg.member.permission.has(command.userPermissions);
                         if (!permission)
-                            return this._client.emit('missingPermission', msg, command, userPermission);
-                    });
-                }
-                else {
-                    const permission = msg.member.permission.has(command.userPermissions);
-                    if (!permission)
-                        return this._client.emit('missingPermission', msg, command, command.userPermissions);
+                            return this._client.emit('missingPermission', msg, command, command.userPermissions);
+                    }
                 }
             }
+            // @ts-ignore
+            await command.run(msg, parsedArgs || args)
+                .then(() => {
+                return this._client.emit('commandRun', msg, command);
+            })
+                .catch((error) => {
+                return this._client.logger.error(error);
+            });
         }
-        // @ts-ignore
-        await command.run(msg, parsedArgs || args)
-            .then(() => {
-            return this._client.emit('commandRun', msg, command);
-        })
-            .catch((error) => {
-            return this._client.logger.error(error);
-        });
+        catch (error) {
+            throw new Error(error);
+        }
     }
 }
 exports.default = CommandHandler;

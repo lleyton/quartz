@@ -7,6 +7,7 @@ const eris_1 = __importDefault(require("eris"));
 const __1 = require("..");
 const util_1 = __importDefault(require("util"));
 const prefix = (msg, _prefix) => {
+    console.log(util_1.default.types.isAsyncFunction(_prefix));
     if (typeof _prefix === 'function') {
         if (util_1.default.types.isAsyncFunction(_prefix)) {
             return _prefix(msg)

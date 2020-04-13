@@ -62,30 +62,34 @@ class EventHandler {
    * @param {object} msg - The message object
    */
   async _onMessageCreate (_msg: Eris.Message): Promise<void> {
-    if (!_msg.author || _msg.author.bot) return
-    const msg = new Message(_msg, this.client)
-    msg.command = null
-    const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const content: string = msg.content.toLowerCase()
-    if (Array.isArray(msg?.prefix)) {
-      msg?.prefix.forEach(p => escapeRegex(p))
-      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix.join('|')})\\s*`)
-      const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
-      if (matchedPrefix) msg.prefix = matchedPrefix
-    } else {
-      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg?.prefix.toLowerCase())})\\s*`)
-      const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
-      if (matchedPrefix) msg.prefix = matchedPrefix
+    try {
+      if (!_msg.author || _msg.author.bot) return
+      const msg = new Message(_msg, this.client)
+      msg.command = null
+      const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const content: string = msg.content.toLowerCase()
+      if (Array.isArray(msg?.prefix)) {
+        msg?.prefix?.map(p => escapeRegex(p))
+        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
+        const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
+        if (matchedPrefix) msg.prefix = matchedPrefix
+      } else {
+        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg?.prefix?.toLowerCase())})\\s*`)
+        const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
+        if (matchedPrefix) msg.prefix = matchedPrefix
+      }
+      if (msg?.prefix) {
+        const args: string[] = msg.content.substring(msg.prefix.length).split(' ')
+        const label: string = args.shift().toLowerCase()
+        const command: Command = await this._client.commandHandler.getCommand(label)
+        // @ts-ignore
+        if (command) msg.command = command
+      }
+      const event = this.events.get('messageCreate')
+      return event.run.call(this, msg)
+    } catch (error) {
+      throw new Error(error)
     }
-    if (msg?.prefix) {
-      const args: string[] = msg.content.substring(msg.prefix.length).split(' ')
-      const label: string = args.shift().toLowerCase()
-      const command: Command = await this._client.commandHandler.getCommand(label)
-      // @ts-ignore
-      if (command) msg.command = command
-    }
-    const event = this.events.get('messageCreate')
-    return event.run.call(this, msg)
   }
 }
 

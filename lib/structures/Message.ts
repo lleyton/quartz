@@ -4,6 +4,7 @@ import { EmbedOptions } from '../typings'
 import util from 'util'
 
 const prefix = (msg: Eris.Message, _prefix: Function | string | string[]): string | string[] => {
+  console.log(util.types.isAsyncFunction(_prefix))
   if (typeof _prefix === 'function') {
     if (util.types.isAsyncFunction(_prefix)) {
       return _prefix(msg)
