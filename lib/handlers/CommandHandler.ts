@@ -2,7 +2,7 @@ import { readdirSync, statSync } from 'fs'
 import { join, sep, resolve } from 'path'
 import Eris, { Collection } from 'eris'
 import ArgumentHandler from './ArgumentHandler'
-import { ClientOptions } from '../types'
+import { ClientOptions } from '../typings'
 import Command from '../structures/Command'
 import { Client } from '..'
 import Message from '../structures/Message'
@@ -10,11 +10,11 @@ import Message from '../structures/Message'
 /** CommandHandler Class */
 class CommandHandler {
   private readonly _client: Client
-  private readonly _prefix: Function | string
+  private readonly _prefix: Function | string | string[]
   private readonly _settings: Function | any
   private readonly _text: Function | string
   private readonly _logo: Function | string
-  private readonly _color: Function | string
+  private readonly _color: Function | string | number
   directory: string
   debug: boolean
   defaultCooldown: number
@@ -125,20 +125,18 @@ class CommandHandler {
    * Runs commands
    * @param {object} msg - The message object
    */
-  async _onMessageCreate (_msg: Message): Promise<void|any> {
+  async _onMessageCreate (_msg: Eris.Message): Promise<void|any> {
     if (!_msg.author || _msg.author.bot || !_msg.member?.guild) return
     const msg = new Message(_msg, this.client)
-    const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const content = msg.content.toLowerCase()
     if (Array.isArray(msg?.prefix)) {
-      msg?.prefix?.forEach(p => escapeRegex(p))
       const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
       if (!prefixRegex.test(content)) return undefined
       const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
       if (!matchedPrefix) return undefined
       msg.prefix = matchedPrefix
     } else {
-      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg?.prefix?.toLowerCase())})\\s*`)
+      const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.toLowerCase()})\\s*`)
       if (!prefixRegex.test(content)) return
       const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
       if (!matchedPrefix) return
@@ -152,7 +150,7 @@ class CommandHandler {
     if (!command) return
     // @ts-ignore
     msg.command = command
-    const parsedArgs = new ArgumentHandler(this.client, command, args).parse(msg)
+    const parsedArgs = await new ArgumentHandler(this.client, command, args).parse(msg)
     if (!parsedArgs) return
     // @ts-ignore
     const channelPermissions: Eris.Permission = msg.channel.permissionsOf(this.client.user.id)

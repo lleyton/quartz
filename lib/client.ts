@@ -4,7 +4,7 @@ import CommandHandler from './handlers/CommandHandler'
 import Embed from './structures/Embed'
 import Eris from 'eris'
 
-import { ClientOptions } from './types'
+import { ClientOptions } from './typings'
 
 /** QuartzClient Class */
 class Client extends Eris.Client {
@@ -29,7 +29,7 @@ class Client extends Eris.Client {
     super(token, options.eris)
     this._options = options
     this.owner = options.owner
-    this.logger = new LogHandler()
+    this.logger = new LogHandler(options?.logger?.name || 'Quartz', options?.logger?.color)
     this.eventHandler = new EventHandler(this, options.eventHandler)
     this.commandHandler = new CommandHandler(this, options.commandHandler)
     this.embed = () => new Embed()

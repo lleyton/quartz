@@ -1,7 +1,7 @@
 import { sep, resolve } from 'path'
 import { readdirSync } from 'fs'
 import Eris, { Collection } from 'eris'
-import { ClientOptions } from '../types'
+import { ClientOptions } from '../typings'
 import Command from '../structures/Command'
 import Client from '../client'
 import Message from '../structures/Message'

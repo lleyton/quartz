@@ -4,26 +4,31 @@ declare module 'quartz' {
   export interface Message extends Eris.Message {
     guild?: Eris.Guild
     command?: Command
-    embed?(message: string, options?: any): Promise<Eris.Message>
+    prefix?: string | string[]
+    color?: string | number
+    text?: string
+    logo?: string
+    embed?(message: string, options?: any): Promise<Message>
     settings?(): any
-    color?(): string
-    text?(): string
-    logo?(): string
   }
 
   export interface ClientOptions {
     eris?: Eris.ClientOptions
     owner?: string | null
+    logger?: {
+      name?: string
+      color?: string
+    }
     eventHandler?: {
-      directory: string
+      directory?: string
       debug?: boolean
     }
     commandHandler: {
       prefix?: any
-      directory: string
+      directory?: string
       defaultCooldown?: number
       debug?: boolean
-      settings?: any
+      settings?: Function | any
       text?: any
       logo?: any
       color?: any
@@ -31,26 +36,25 @@ declare module 'quartz' {
   }
 
   export interface EmbedOptions {
-    reply: boolean
-    bold: boolean
-    color: any
-    footer: boolean
-    text: boolean
+    reply?: boolean
+    bold?: boolean
+    color?: any
+    footer?: boolean
+    text?: boolean
   }
 
   export interface Cooldown {
-    expires: number
-    command: number
+    expires?: number
+    command?: number
   }
 
   export class Client {
     owner: string | null
-    logger: any
-    eventHandler: any
+    logger: LogHandler
+    eventHandler: EventHandler
     commandHandler: CommandHandler
     constructor(token?: string, options?: ClientOptions, extensions?: any)
-    client(): any
-    start(): void
+    start(): Promise<void> | void
     [name: string]: any
   }
 
@@ -58,32 +62,24 @@ declare module 'quartz' {
     directory: string
     debug: boolean
     defaultCooldown: number
-    commands: any
-    modules: any
-    aliases: any
-    cooldowns: any
-    constructor (quartz: any, options: ClientOptions['commandHandler'])
-    quartz(): Client
-    client(): any
+    commands: Eris.Collection<any>
+    modules: Eris.Collection<any>
+    aliases: Eris.Collection<any>
+    cooldowns: Eris.Collection<any>
+    constructor (client: Client, options: ClientOptions['commandHandler'])
+    client(): Client
     getCommand(commandName: string): Command
     getCommands(module: string): Command[]
     loadModules(): string[]
     loadCommands(): void
-    settings(msg: any): any
-    text(msg: any): any
-    logo(msg: any): any
-    color(msg: any): any
-    prefix(msg: any): any
-    embed(msg: any, message: string, options: EmbedOptions): any
   }
 
   export class EventHandler {
     directory: string
     debug: boolean
-    events: any
-    constructor (quartz: any, options: ClientOptions['eventHandler'])
-    quartz(): Client
-    client(): any
+    events: Eris.Collection<unknown>
+    constructor (client: Client, options: ClientOptions['eventHandler'])
+    client(): Client
     loadEvents(): void
   }
 
@@ -95,9 +91,8 @@ declare module 'quartz' {
   }
 
   export class Base {
-    constructor(quartzClient: Client)
-    quartz(): Client
-    client(): any
+    constructor(client: Client)
+    client(): Client
     logger(): LogHandler
   }
 
@@ -132,7 +127,7 @@ declare module 'quartz' {
     client: Client
     constructor (client: Client, options: CommandOptions)
     userPermissions?(...args: any): Promise<any> | null
-    run(...args: any): Promise<void> | void
+    run(...args: any): Promise<any> | any
   }
 
   export class Embed {

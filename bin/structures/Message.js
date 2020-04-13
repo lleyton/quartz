@@ -32,17 +32,19 @@ const logo = (msg, _logo) => {
 };
 class Message extends eris_1.default.Message {
     constructor(msg, client) {
-        var _a;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         super({
-            id: msg.id
+            id: msg.id,
+            channel_id: msg.channel.id,
+            author: msg.author
         }, client);
-        const _prefix = prefix(msg, this._prefix);
         this.client = client;
-        this.guild = ((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild) || null;
+        const _prefix = prefix(msg, (_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.prefix);
+        this.guild = ((_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild) || null;
         this.prefix = _prefix;
-        this.color = color(msg, this._color);
-        this.text = text(msg, this._text);
-        this.logo = logo(msg, this._logo);
+        this.color = color(msg, (_e = (_d = this.client._options) === null || _d === void 0 ? void 0 : _d.commandHandler) === null || _e === void 0 ? void 0 : _e.color);
+        this.text = text(msg, (_g = (_f = this.client._options) === null || _f === void 0 ? void 0 : _f.commandHandler) === null || _g === void 0 ? void 0 : _g.text);
+        this.logo = logo(msg, (_j = (_h = this.client._options) === null || _h === void 0 ? void 0 : _h.commandHandler) === null || _j === void 0 ? void 0 : _j.logo);
         this.content = msg.content.replace(/<@!/g, '<@');
     }
     /**
@@ -85,19 +87,18 @@ class Message extends eris_1.default.Message {
      * @param {object} msg - The message object
      * @return {object} The settings object
      */
-    settings(msg) {
-        if (typeof this._settings !== 'function') {
+    settings() {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        if (typeof ((_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.settings) !== 'function') {
             if (util_1.default.types.isAsyncFunction(this._settings)) {
-                return this._settings
-                    .then((settings) => settings)
-                    .catch((error) => {
+                return (_d = (_c = this.client._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.settings(this).then((settings) => settings).catch((error) => {
                     throw new Error(error.message);
                 });
             }
-            return this._settings;
+            return (_f = (_e = this.client._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.settings;
         }
         else
-            return this._settings(msg);
+            return (_h = (_g = this.client._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.settings(this);
     }
 }
 exports.default = Message;

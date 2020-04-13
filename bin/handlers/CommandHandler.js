@@ -126,17 +126,14 @@ class CommandHandler {
      * Runs commands
      * @param {object} msg - The message object
      */
-    async _onMessageCreate(msg) {
-        var _a, _b, _c, _d, _e, _f, _g;
-        if (!msg.author || msg.author.bot || !((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild))
+    async _onMessageCreate(_msg) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        if (!_msg.author || _msg.author.bot || !((_a = _msg.member) === null || _a === void 0 ? void 0 : _a.guild))
             return;
-        msg = new Message_1.default(msg, this.client);
-        const prefix = msg.prefix;
-        const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const msg = new Message_1.default(_msg, this.client);
         const content = msg.content.toLowerCase();
-        if (Array.isArray(prefix)) {
-            prefix.forEach(p => escapeRegex(p));
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${prefix.join('|')})\\s*`);
+        if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
+            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')})\\s*`);
             if (!prefixRegex.test(content))
                 return undefined;
             const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
@@ -145,7 +142,7 @@ class CommandHandler {
             msg.prefix = matchedPrefix;
         }
         else {
-            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(prefix.toLowerCase())})\\s*`);
+            const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_c = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _c === void 0 ? void 0 : _c.toLowerCase()})\\s*`);
             if (!prefixRegex.test(content))
                 return;
             const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
@@ -163,7 +160,7 @@ class CommandHandler {
             return;
         // @ts-ignore
         msg.command = command;
-        const parsedArgs = new ArgumentHandler_1.default(this.client, command, args).parse(msg);
+        const parsedArgs = await new ArgumentHandler_1.default(this.client, command, args).parse(msg);
         if (!parsedArgs)
             return;
         // @ts-ignore
@@ -176,8 +173,8 @@ class CommandHandler {
                 if (missing != null)
                     return this._client.emit('missingPermission', msg, command, missing);
             }
-            else if ((_b = msg.member) === null || _b === void 0 ? void 0 : _b.guild) {
-                const botPermissions = (_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild.members.get(this.client.user.id).permission;
+            else if ((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild) {
+                const botPermissions = (_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild.members.get(this.client.user.id).permission;
                 if (command.botPermissions instanceof Array) {
                     for (const p of command.botPermissions) {
                         if (!botPermissions.has(p))
@@ -213,10 +210,10 @@ class CommandHandler {
                 this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 });
             }
         }
-        if (command.guildOnly && !((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild))
+        if (command.guildOnly && !((_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild))
             return;
-        if ((_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild)
-            msg.guild = (_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild;
+        if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild)
+            msg.guild = (_h = msg.member) === null || _h === void 0 ? void 0 : _h.guild;
         if (command.ownerOnly && msg.author.id !== this._client.owner)
             return;
         if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner)
@@ -229,7 +226,7 @@ class CommandHandler {
                     return;
                 }
             }
-            else if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild) {
+            else if ((_j = msg.member) === null || _j === void 0 ? void 0 : _j.guild) {
                 if (Array.isArray(command.userPermissions)) {
                     command.userPermissions.forEach((userPermission) => {
                         const permission = msg.member.permission.has(userPermission);

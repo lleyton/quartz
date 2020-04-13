@@ -1,6 +1,6 @@
 import Base from './Base'
 import { Client } from '..'
-import { EventOptions } from '../types'
+import { EventOptions } from '../typings'
 
 /** Event Class */
 class Event extends Base {
@@ -23,7 +23,7 @@ class Event extends Base {
   /**
    * Run when command called
    */
-  public run (): Promise<void> | void {
+  public run (): Promise<any> | any {
     throw new Error(`${this.constructor.name}#run has not been implemented`)
   }
 }

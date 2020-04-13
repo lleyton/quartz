@@ -80,61 +80,68 @@ class ArgumentHandler {
      * @param {object} msg - The key of the argument
      * @return {any} Returns result
      */
-    parse(msg) {
-        if (this.command.args && this.command.args.length > 0) {
-            const parsed = {};
-            const args = this.quoted();
-            let prompt = false;
-            Promise.all(this.command.args.forEach(async (arg) => {
-                if (arg.key && arg.type && this.types.includes(arg.type)) {
-                    const CustomType = await Promise.resolve().then(() => __importStar(require(`../types/${arg.type}`)));
-                    const type = new CustomType(this.client);
-                    const defaultValue = this.default(arg, msg);
-                    if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg).length <= 0)) {
-                        prompt = true;
-                        await this.prompt(msg, arg.key, arg.prompt);
-                        return;
-                    }
-                    if (!args || args.length <= 0) {
-                        prompt = true;
-                        await this.prompt(msg, arg.key, arg.prompt);
-                        return;
-                    }
-                    if (this.command.args.slice(-1)[0].key === arg.key) {
-                        args.splice(0, this.command.args.length - 1);
-                        let result = type.parse(args.join(' ') || '' || defaultValue || '', msg);
-                        if (!result) {
-                            if (defaultValue)
-                                result = defaultValue;
-                            else {
-                                prompt = true;
-                                await this.prompt(msg, arg.key, arg.prompt);
-                                return;
-                            }
+    async parse(msg) {
+        try {
+            if (this.command.args && this.command.args.length > 0) {
+                const parsed = {};
+                const args = this.quoted();
+                let prompt = false;
+                await this.command.args.forEach(async (arg) => {
+                    if (arg.key && arg.type && this.types.includes(arg.type)) {
+                        console.log(arg);
+                        const CustomType = await Promise.resolve().then(() => __importStar(require(`../types/${arg.type}`)));
+                        console.log(CustomType);
+                        const type = new CustomType(this.client);
+                        const defaultValue = this.default(arg, msg);
+                        if (!defaultValue && (!args || args.length <= 0 || !args[this.command.args.indexOf(arg)] || this.command.args.indexOf(arg) <= 0)) {
+                            prompt = true;
+                            await this.prompt(msg, arg.key, arg.prompt);
+                            return;
                         }
-                        parsed[arg.key] = result;
-                    }
-                    else {
-                        let result = type.parse(args[this.command.args.indexOf(arg)] || defaultValue || '', msg);
-                        if (!result) {
-                            if (defaultValue)
-                                result = defaultValue;
-                            else {
-                                prompt = true;
-                                await this.prompt(msg, arg.key, arg.prompt);
-                                return;
-                            }
+                        if (!args || args.length <= 0) {
+                            prompt = true;
+                            await this.prompt(msg, arg.key, arg.prompt);
+                            return;
                         }
-                        parsed[arg.key] = result;
+                        if (this.command.args.slice(-1)[0].key === arg.key) {
+                            args.splice(0, this.command.args.length - 1);
+                            let result = type.parse(args.join(' ') || '' || defaultValue || '', msg);
+                            if (!result) {
+                                if (defaultValue)
+                                    result = defaultValue;
+                                else {
+                                    prompt = true;
+                                    await this.prompt(msg, arg.key, arg.prompt);
+                                    return;
+                                }
+                            }
+                            parsed[arg.key] = result;
+                        }
+                        else {
+                            let result = type.parse(args[this.command.args.indexOf(arg)] || defaultValue || '', msg);
+                            if (!result) {
+                                if (defaultValue)
+                                    result = defaultValue;
+                                else {
+                                    prompt = true;
+                                    await this.prompt(msg, arg.key, arg.prompt);
+                                    return;
+                                }
+                            }
+                            parsed[arg.key] = result;
+                        }
                     }
-                }
-            }));
-            if (prompt)
-                return undefined;
-            return parsed || this.args;
+                });
+                if (prompt)
+                    return undefined;
+                return parsed || this.args;
+            }
+            else {
+                return this.args;
+            }
         }
-        else {
-            return this.args;
+        catch (error) {
+            return undefined;
         }
     }
 }

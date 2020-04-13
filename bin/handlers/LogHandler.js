@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chalk_1 = __importDefault(require("chalk"));
 /** LogHandler Class */
 class LogHandler {
+    constructor(name, color) {
+        this.name = name;
+        this.color = color;
+    }
     /**
      * Send warning to console
      * @param {string} message - The warning message
@@ -28,7 +32,7 @@ class LogHandler {
      * @param {string} message - The info message
      */
     info(...message) {
-        console.log(chalk_1.default.hex('#7289DA')('[Points]: ') + chalk_1.default.yellow(...message));
+        console.log(chalk_1.default.hex(this.color || '#ffffff')(`[${this.name.toUpperCase()}]: `) + chalk_1.default.yellow(...message));
     }
     /**
      * Send console to console

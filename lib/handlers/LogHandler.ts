@@ -2,6 +2,14 @@ import COLOR from 'chalk'
 
 /** LogHandler Class */
 class LogHandler {
+  name: string
+  color: string
+
+  constructor (name: string, color: string) {
+    this.name = name
+    this.color = color
+  }
+
   /**
    * Send warning to console
    * @param {string} message - The warning message
@@ -26,7 +34,7 @@ class LogHandler {
    * @param {string} message - The info message
    */
   public info (...message: string[]): void {
-    console.log(COLOR.hex('#7289DA')('[Points]: ') + COLOR.yellow(...message))
+    console.log(COLOR.hex(this.color || '#ffffff')(`[${this.name.toUpperCase()}]: `) + COLOR.yellow(...message))
   }
 
   /**

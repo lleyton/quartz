@@ -1,5 +1,5 @@
 import Base from './Base'
-import { Cooldown, CommandOptions, Argument, Description } from '../types'
+import { Cooldown, CommandOptions, Argument, Description } from '../typings'
 import { Client } from '..'
 
 /** Command Class */
@@ -56,7 +56,7 @@ class Command extends Base {
   /**
    * Run when command called
    */
-  run (): Promise<void> | void {
+  run (): Promise<any> | any {
     throw new Error(`${this.constructor.name}#run has not been implemented`)
   }
 }

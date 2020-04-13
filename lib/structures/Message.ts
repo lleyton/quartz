@@ -1,14 +1,14 @@
 import Eris from 'eris'
 import { Client, Embed } from '..'
-import { EmbedOptions } from '../types'
+import { EmbedOptions } from '../typings'
 import util from 'util'
 
-const prefix = (msg: Eris.Message, _prefix: Function | string): string => {
+const prefix = (msg: Eris.Message, _prefix: Function | string | string[]): string | string[] => {
   if (typeof _prefix !== 'function') return _prefix
   else return _prefix(msg)
 }
 
-const color = (msg: Eris.Message, _color: Function | string): string => {
+const color = (msg: Eris.Message, _color: Function | string | number): string | number => {
   if (typeof _color !== 'function') return _color
   else return _color(msg)
 }
@@ -24,30 +24,29 @@ const logo = (msg: Eris.Message, _logo: Function | string): string => {
 }
 
 class Message extends Eris.Message {
-  private readonly _prefix: Function | string
   private readonly _settings: Function | any
-  private readonly _text: Function | string
-  private readonly _logo: Function | string
-  private readonly _color: Function | string
 
   readonly client: Client
-  readonly color?: string
-  readonly text?: string
-  readonly logo?: string
-
+  color: string | number
+  text: string
+  logo: string
   guild?: Eris.Guild
+  // @ts-ignore
+  prefix?: string | string[]
 
   constructor (msg: Eris.Message, client: Client) {
     super({
-      id: msg.id
+      id: msg.id,
+      channel_id: msg.channel.id,
+      author: msg.author
     }, client)
-    const _prefix = prefix(msg, this._prefix)
     this.client = client
+    const _prefix = prefix(msg, this.client._options?.commandHandler?.prefix)
     this.guild = msg.member?.guild || null
     this.prefix = _prefix
-    this.color = color(msg, this._color)
-    this.text = text(msg, this._text)
-    this.logo = logo(msg, this._logo)
+    this.color = color(msg, this.client._options?.commandHandler?.color)
+    this.text = text(msg, this.client._options?.commandHandler?.text)
+    this.logo = logo(msg, this.client._options?.commandHandler?.logo)
     this.content = msg.content.replace(/<@!/g, '<@')
   }
 
@@ -85,17 +84,17 @@ class Message extends Eris.Message {
    * @param {object} msg - The message object
    * @return {object} The settings object
    */
-  settings (msg: Eris.Message): any {
-    if (typeof this._settings !== 'function') {
+  settings (): any {
+    if (typeof this.client._options?.commandHandler?.settings !== 'function') {
       if (util.types.isAsyncFunction(this._settings)) {
-        return this._settings
+        return this.client._options?.commandHandler?.settings(this)
           .then((settings: any) => settings)
           .catch((error: Error) => {
             throw new Error(error.message)
           })
       }
-      return this._settings
-    } else return this._settings(msg)
+      return this.client._options?.commandHandler?.settings
+    } else return this.client._options?.commandHandler?.settings(this)
   }
 }
 
