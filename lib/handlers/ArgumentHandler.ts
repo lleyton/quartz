@@ -1,7 +1,6 @@
 import Eris from 'eris'
 import Command from '../structures/Command'
-import Message from '../structures/Message'
-import { Argument } from '../typings'
+import { Argument, Message } from '../typings'
 import path from 'path'
 
 /** ArgumentHandler Class */

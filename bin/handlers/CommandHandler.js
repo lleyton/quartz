@@ -122,7 +122,7 @@ class CommandHandler {
      * @param {object} msg - The message object
      */
     async _onMessageCreate(_msg) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
         try {
             if (!_msg.author || _msg.author.bot || !((_a = _msg.member) === null || _a === void 0 ? void 0 : _a.guild))
                 return;
@@ -149,8 +149,7 @@ class CommandHandler {
             }
             if (!msg.prefix)
                 return;
-            msg.content = msg.content.replace(/<@!/g, '<@');
-            const args = msg.content.slice(msg.prefix.length).trim().split(/ +/);
+            const args = ((_d = msg === null || msg === void 0 ? void 0 : msg.cleanContent) === null || _d === void 0 ? void 0 : _d.slice(msg.prefix.length).trim().split(/ +/)) || ((_e = msg === null || msg === void 0 ? void 0 : msg.content) === null || _e === void 0 ? void 0 : _e.slice(msg.prefix.length).trim().split(/ +/));
             const label = args.shift().toLowerCase();
             const command = this.getCommand(label);
             if (!command)
@@ -159,7 +158,6 @@ class CommandHandler {
             msg.command = command;
             const argumentHandler = new ArgumentHandler_1.default(this.client, command, args);
             const parsedArgs = await argumentHandler.parse(msg);
-            console.log(parsedArgs, 'args');
             if (!parsedArgs)
                 return;
             // @ts-ignore
@@ -172,8 +170,8 @@ class CommandHandler {
                     if (missing != null)
                         return this._client.emit('missingPermission', msg, command, missing);
                 }
-                else if ((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild) {
-                    const botPermissions = (_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild.members.get(this.client.user.id).permission;
+                else if ((_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild) {
+                    const botPermissions = (_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild.members.get(this.client.user.id).permission;
                     if (command.botPermissions instanceof Array) {
                         for (const p of command.botPermissions) {
                             if (!botPermissions.has(p))
@@ -186,7 +184,7 @@ class CommandHandler {
                     }
                 }
             }
-            if (command.cooldown && command.cooldown.expires && command.cooldown.command) {
+            if (command.cooldown && command.cooldown.expires && command.cooldown.command && msg.author.id !== this._client.owner) {
                 const checkCooldown = this.cooldowns.get(msg.author.id);
                 if (checkCooldown === null || checkCooldown === void 0 ? void 0 : checkCooldown.expires) {
                     if (new Date(checkCooldown.expires) < new Date()) {
@@ -209,10 +207,10 @@ class CommandHandler {
                     this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 });
                 }
             }
-            if (command.guildOnly && !((_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild))
+            if (command.guildOnly && !((_h = msg.member) === null || _h === void 0 ? void 0 : _h.guild))
                 return;
-            if ((_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild)
-                msg.guild = (_h = msg.member) === null || _h === void 0 ? void 0 : _h.guild;
+            if ((_j = msg.member) === null || _j === void 0 ? void 0 : _j.guild)
+                msg.guild = (_k = msg.member) === null || _k === void 0 ? void 0 : _k.guild;
             if (command.ownerOnly && msg.author.id !== this._client.owner)
                 return;
             if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner)
@@ -225,7 +223,7 @@ class CommandHandler {
                         return;
                     }
                 }
-                else if ((_j = msg.member) === null || _j === void 0 ? void 0 : _j.guild) {
+                else if ((_l = msg.member) === null || _l === void 0 ? void 0 : _l.guild) {
                     if (Array.isArray(command.userPermissions)) {
                         command.userPermissions.forEach((userPermission) => {
                             const permission = msg.member.permission.has(userPermission);

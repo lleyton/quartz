@@ -1,7 +1,7 @@
 import { sep, resolve } from 'path'
 import { readdirSync } from 'fs'
 import Eris, { Collection } from 'eris'
-import { ClientOptions } from '../typings'
+import { ClientOptions, Message as MessageTyping } from '../typings'
 import Command from '../structures/Command'
 import Client from '../client'
 import Message from '../structures/Message'
@@ -64,7 +64,7 @@ class EventHandler {
   async _onMessageCreate (_msg: Eris.Message): Promise<void> {
     try {
       if (!_msg.author || _msg.author.bot) return
-      const msg = new Message(_msg, this.client)
+      const msg: MessageTyping = new Message(_msg, this.client) as unknown as MessageTyping
       await msg._configure()
       msg.command = null
       const content: string = msg.content.toLowerCase()

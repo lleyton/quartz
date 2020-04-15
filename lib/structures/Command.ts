@@ -34,7 +34,7 @@ class Command extends Base {
       description = '',
       cooldown = {
         expires: 5000,
-        command: 2
+        command: 3
       },
       botPermissions = this.botPermissions,
       userPermissions = this.userPermissions

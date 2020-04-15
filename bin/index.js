@@ -14,8 +14,6 @@ const Event_1 = __importDefault(require("./structures/Event"));
 exports.Event = Event_1.default;
 const Embed_1 = __importDefault(require("./structures/Embed"));
 exports.Embed = Embed_1.default;
-const Message_1 = __importDefault(require("./structures/Message"));
-exports.Message = Message_1.default;
 if (Number(process.version.slice(1).split('.')[0]) < 10)
     throw new Error('Node 10 or higher is required.');
 //# sourceMappingURL=index.js.map

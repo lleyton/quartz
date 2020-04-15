@@ -1,9 +1,22 @@
 "use strict";
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to set private field on non-instance");
+    }
+    privateMap.set(receiver, value);
+    return value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to get private field on non-instance");
+    }
+    return privateMap.get(receiver);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _client;
 Object.defineProperty(exports, "__esModule", { value: true });
-const eris_1 = __importDefault(require("eris"));
 const __1 = require("..");
 const util_1 = __importDefault(require("util"));
 const prefix = (msg, _prefix) => {
@@ -62,24 +75,18 @@ const logo = (msg, _logo) => {
     else
         return _logo;
 };
-class Message extends eris_1.default.Message {
+class Message {
     constructor(msg, client) {
-        var _a;
-        super({
-            id: msg.id,
-            channel_id: msg.channel.id,
-            author: msg.author
-        }, client);
-        this.client = client;
-        this.guild = ((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild) || null;
-        this.content = msg.content.replace(/<@!/g, '<@');
+        _client.set(this, void 0);
+        Object.assign(this, msg);
+        __classPrivateFieldSet(this, _client, client);
     }
     async _configure() {
         var _a, _b, _c, _d, _e, _f, _g, _h;
-        this.prefix = await prefix(this, (_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.prefix);
-        this.color = await color(this, (_d = (_c = this.client._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.color);
-        this.text = await text(this, (_f = (_e = this.client._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.text);
-        this.logo = await logo(this, (_h = (_g = this.client._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.logo);
+        this.prefix = await prefix(this, (_b = (_a = __classPrivateFieldGet(this, _client)._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.prefix);
+        this.color = await color(this, (_d = (_c = __classPrivateFieldGet(this, _client)._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.color);
+        this.text = await text(this, (_f = (_e = __classPrivateFieldGet(this, _client)._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.text);
+        this.logo = await logo(this, (_h = (_g = __classPrivateFieldGet(this, _client)._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.logo);
     }
     /**
      * Return a embed
@@ -100,7 +107,7 @@ class Message extends eris_1.default.Message {
                 message = `**<@${this.author.id}>, ${message}**`;
             if (options.text) {
                 this.channel.createMessage(message)
-                    .then((erisMsg) => resolve(new Message(erisMsg, this.client)))
+                    .then((erisMsg) => resolve(new Message(erisMsg, __classPrivateFieldGet(this, _client))))
                     .catch((error) => reject(error));
                 return;
             }
@@ -112,7 +119,7 @@ class Message extends eris_1.default.Message {
             if (options.footer)
                 generateEmbed.setFooter(this.text, this.logo);
             this.channel.createMessage({ embed: generateEmbed })
-                .then((erisMsg) => resolve((new Message(erisMsg, this.client))))
+                .then((erisMsg) => resolve((new Message(erisMsg, __classPrivateFieldGet(this, _client)))))
                 .catch((error) => reject(error));
         });
     }
@@ -123,17 +130,18 @@ class Message extends eris_1.default.Message {
      */
     settings() {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
-        if (typeof ((_b = (_a = this.client._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.settings) === 'function') {
-            if (util_1.default.types.isAsyncFunction((_d = (_c = this.client._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.settings)) {
-                return (_f = (_e = this.client._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.settings(this).then((settings) => settings).catch((error) => {
+        if (typeof ((_b = (_a = __classPrivateFieldGet(this, _client)._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.settings) === 'function') {
+            if (util_1.default.types.isAsyncFunction((_d = (_c = __classPrivateFieldGet(this, _client)._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.settings)) {
+                return (_f = (_e = __classPrivateFieldGet(this, _client)._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.settings(this).then((settings) => settings).catch((error) => {
                     throw new Error(error.message);
                 });
             }
-            return (_h = (_g = this.client._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.settings(this);
+            return (_h = (_g = __classPrivateFieldGet(this, _client)._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.settings(this);
         }
         else
-            return (_k = (_j = this.client._options) === null || _j === void 0 ? void 0 : _j.commandHandler) === null || _k === void 0 ? void 0 : _k.settings;
+            return (_k = (_j = __classPrivateFieldGet(this, _client)._options) === null || _j === void 0 ? void 0 : _j.commandHandler) === null || _k === void 0 ? void 0 : _k.settings;
     }
 }
+_client = new WeakMap();
 exports.default = Message;
 //# sourceMappingURL=Message.js.map

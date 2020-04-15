@@ -1,4 +1,5 @@
 import Eris from 'eris'
+import Command from './structures/Command'
 
 export interface ClientOptions {
   eris?: Eris.ClientOptions
@@ -67,11 +68,14 @@ export interface EventOptions {
   name?: string
 }
 
+// @ts-ignore
 export interface Message extends Eris.Message {
   guild?: Eris.Guild
-  embed?(message: string, options?: any): Promise<Message>
-  color?(): string
-  text?(): string
-  logo?(): string
+  color?: string | number
+  text?: string
+  logo?: string
+  command?: Command
+  _configure(): Promise<void>
+  embed?(message: string, options?: EmbedOptions): Promise<Message>
   settings?(): any
 }

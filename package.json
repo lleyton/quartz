@@ -17,7 +17,7 @@
     "source-map-support": "^0.5.16"
   },
   "peerDependencies": {
-    "eris": "^0.11.2"
+    "eris": "^0.12.0"
   },
   "devDependencies": {
     "@types/node": "^12.12.14",

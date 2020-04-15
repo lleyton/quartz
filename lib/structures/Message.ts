@@ -55,31 +55,26 @@ const logo = (msg: Message, _logo: Function | string): string => {
   } else return _logo
 }
 
-class Message extends Eris.Message {
-  readonly client: Client
+class Message {
+  #client: Client
   color: string | number
   text: string
   logo: string
   guild?: Eris.Guild
-  // @ts-ignore
   prefix?: string | string[]
+  channel?: Eris.TextChannel | Eris.PrivateChannel | Eris.NewsChannel
+  author: Eris.User
 
   constructor (msg: Eris.Message, client: Client) {
-    super({
-      id: msg.id,
-      channel_id: msg.channel.id,
-      author: msg.author
-    }, client)
-    this.client = client
-    this.guild = msg.member?.guild || null
-    this.content = msg.content.replace(/<@!/g, '<@')
+    Object.assign(this, msg)
+    this.#client = client
   }
 
   async _configure (): Promise<void> {
-    this.prefix = await prefix(this, this.client._options?.commandHandler?.prefix)
-    this.color = await color(this, this.client._options?.commandHandler?.color)
-    this.text = await text(this, this.client._options?.commandHandler?.text)
-    this.logo = await logo(this, this.client._options?.commandHandler?.logo)
+    this.prefix = await prefix(this, this.#client._options?.commandHandler?.prefix)
+    this.color = await color(this, this.#client._options?.commandHandler?.color)
+    this.text = await text(this, this.#client._options?.commandHandler?.text)
+    this.logo = await logo(this, this.#client._options?.commandHandler?.logo)
   }
 
   /**
@@ -97,7 +92,7 @@ class Message extends Eris.Message {
       else if (options.bold && options.reply) message = `**<@${this.author.id}>, ${message}**`
       if (options.text) {
         this.channel.createMessage(message)
-          .then((erisMsg) => resolve(new Message(erisMsg, this.client)))
+          .then((erisMsg) => resolve(new Message(erisMsg, this.#client)))
           .catch((error) => reject(error))
         return
       }
@@ -106,7 +101,7 @@ class Message extends Eris.Message {
       else generateEmbed.setColor(this.color)
       if (options.footer) generateEmbed.setFooter(this.text, this.logo)
       this.channel.createMessage({ embed: generateEmbed })
-        .then((erisMsg) => resolve((new Message(erisMsg, this.client))))
+        .then((erisMsg) => resolve((new Message(erisMsg, this.#client))))
         .catch((error) => reject(error))
     })
   }
@@ -117,16 +112,16 @@ class Message extends Eris.Message {
    * @return {object} The settings object
    */
   settings (): any {
-    if (typeof this.client._options?.commandHandler?.settings === 'function') {
-      if (util.types.isAsyncFunction(this.client._options?.commandHandler?.settings)) {
-        return this.client._options?.commandHandler?.settings(this)
+    if (typeof this.#client._options?.commandHandler?.settings === 'function') {
+      if (util.types.isAsyncFunction(this.#client._options?.commandHandler?.settings)) {
+        return this.#client._options?.commandHandler?.settings(this)
           .then((settings: any) => settings)
           .catch((error: Error) => {
             throw new Error(error.message)
           })
       }
-      return this.client._options?.commandHandler?.settings(this)
-    } else return this.client._options?.commandHandler?.settings
+      return this.#client._options?.commandHandler?.settings(this)
+    } else return this.#client._options?.commandHandler?.settings
   }
 }
 

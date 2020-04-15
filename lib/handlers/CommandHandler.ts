@@ -2,11 +2,10 @@ import { readdirSync, statSync } from 'fs'
 import { join, sep, resolve } from 'path'
 import Eris, { Collection } from 'eris'
 import ArgumentHandler from './ArgumentHandler'
-import { ClientOptions } from '../typings'
+import { ClientOptions, Message as MessageTyping } from '../typings'
 import Command from '../structures/Command'
 import { Client } from '..'
 import Message from '../structures/Message'
-
 /** CommandHandler Class */
 class CommandHandler {
   private readonly _client: Client
@@ -118,7 +117,7 @@ class CommandHandler {
   async _onMessageCreate (_msg: Eris.Message): Promise<void|any> {
     try {
       if (!_msg.author || _msg.author.bot || !_msg.member?.guild) return
-      const msg = new Message(_msg, this.client)
+      const msg: MessageTyping = new Message(_msg, this.client) as unknown as MessageTyping
       await msg._configure()
       const content = msg.content.toLowerCase()
       if (Array.isArray(msg?.prefix)) {
@@ -135,8 +134,7 @@ class CommandHandler {
         msg.prefix = matchedPrefix
       }
       if (!msg.prefix) return
-      msg.content = msg.content.replace(/<@!/g, '<@')
-      const args = msg.content.slice(msg.prefix.length).trim().split(/ +/)
+      const args = msg?.cleanContent?.slice(msg.prefix.length).trim().split(/ +/) || msg?.content?.slice(msg.prefix.length).trim().split(/ +/)
       const label = args.shift().toLowerCase()
       const command = this.getCommand(label)
       if (!command) return
@@ -144,7 +142,6 @@ class CommandHandler {
       msg.command = command
       const argumentHandler = new ArgumentHandler(this.client, command, args)
       const parsedArgs = await argumentHandler.parse(msg)
-      console.log(parsedArgs, 'args')
       if (!parsedArgs) return
       // @ts-ignore
       const channelPermissions: Eris.Permission = msg.channel.permissionsOf(this.client.user.id)
@@ -164,7 +161,7 @@ class CommandHandler {
           }
         }
       }
-      if (command.cooldown && command.cooldown.expires && command.cooldown.command) {
+      if (command.cooldown && command.cooldown.expires && command.cooldown.command && msg.author.id !== this._client.owner) {
         const checkCooldown = this.cooldowns.get(msg.author.id)
         if (checkCooldown?.expires) {
           if (new Date(checkCooldown.expires) < new Date()) {
