@@ -209,7 +209,7 @@ class CommandHandler {
       // @ts-ignore
       await command.run(msg, parsedArgs || args)
         .then(() => {
-          return this._client.emit('commandRun', msg, command)
+          if (this.debug) return this._client.emit('commandRun', msg, command)
         })
         .catch((error: any) => {
           return this._client.logger.error(error)
