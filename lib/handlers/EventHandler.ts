@@ -74,11 +74,13 @@ class EventHandler {
           const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
           const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
           if (matchedPrefix) msg.prefix = matchedPrefix
+          else msg.prefix = null
         }
       } else if (msg.prefix) {
         const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.toLowerCase()})\\s*`)
         const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
         if (matchedPrefix) msg.prefix = matchedPrefix
+        else msg.prefix = null
       }
       if (msg?.prefix) {
         const args: string[] = msg.content.substring(msg.prefix.length).split(' ')
