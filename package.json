@@ -1,12 +1,11 @@
 {
-  "name": "quartz",
+  "name": "@points.city/quartz",
   "version": "2.0.0",
   "description": "The heart of Points",
   "main": "bin/index",
   "typings": "lib/index.d.ts",
   "author": "Adam <adam@atiktech.co>",
   "license": "MIT",
-  "private": true,
   "repository": "https://github.com/pointscity/quartz",
   "scripts": {
     "build": "tsc",

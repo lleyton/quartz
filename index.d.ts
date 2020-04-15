@@ -1,6 +1,6 @@
 import Eris from 'eris'
 
-declare module 'quartz' {
+declare module '@points.city/quartz' {
   export interface Message extends Eris.Message {
     guild?: Eris.Guild
     command?: Command

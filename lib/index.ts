@@ -1,7 +1,6 @@
 import 'source-map-support/register'
 
 import Client from './client'
-import Base from './structures/Base'
 import Command from './structures/Command'
 import Event from './structures/Event'
 import Embed from './structures/Embed'
@@ -11,7 +10,6 @@ if (Number(process.version.slice(1).split('.')[0]) < 10) throw new Error('Node 1
 
 export {
   Client,
-  Base,
   Command,
   Event,
   Embed,
