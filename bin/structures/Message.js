@@ -23,7 +23,7 @@ const prefix = (msg, _prefix) => {
     if (typeof _prefix === 'function') {
         if (util_1.default.types.isAsyncFunction(_prefix)) {
             return _prefix(msg)
-                .then((prefix) => prefix)
+                .then((prefix) => prefix || '!')
                 .catch((error) => {
                 throw new Error(error.message);
             });
@@ -83,7 +83,7 @@ class Message {
     }
     async _configure() {
         var _a, _b, _c, _d, _e, _f, _g, _h;
-        this.prefix = await prefix(this, (_b = (_a = __classPrivateFieldGet(this, _client)._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.prefix);
+        this.prefix = await prefix(this, (_b = (_a = __classPrivateFieldGet(this, _client)._options) === null || _a === void 0 ? void 0 : _a.commandHandler) === null || _b === void 0 ? void 0 : _b.prefix) || '!';
         this.color = await color(this, (_d = (_c = __classPrivateFieldGet(this, _client)._options) === null || _c === void 0 ? void 0 : _c.commandHandler) === null || _d === void 0 ? void 0 : _d.color);
         this.text = await text(this, (_f = (_e = __classPrivateFieldGet(this, _client)._options) === null || _e === void 0 ? void 0 : _e.commandHandler) === null || _f === void 0 ? void 0 : _f.text);
         this.logo = await logo(this, (_h = (_g = __classPrivateFieldGet(this, _client)._options) === null || _g === void 0 ? void 0 : _g.commandHandler) === null || _h === void 0 ? void 0 : _h.logo);

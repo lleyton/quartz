@@ -123,14 +123,14 @@ class CommandHandler {
       if (Array.isArray(msg?.prefix)) {
         if (msg.prefix.length <= 0) msg.prefix = null
         else {
-          const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
+          const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|') || '!'})\\s*`)
           if (!prefixRegex.test(content)) return undefined
           const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
           if (!matchedPrefix) return undefined
           msg.prefix = matchedPrefix
         }
       } else if (msg.prefix) {
-        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.toLowerCase()})\\s*`)
+        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.toLowerCase() || '!'})\\s*`)
         if (!prefixRegex.test(content)) return
         const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
         if (!matchedPrefix) return

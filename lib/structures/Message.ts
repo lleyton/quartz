@@ -7,7 +7,7 @@ const prefix = (msg: Message, _prefix: Function | string | string[]): string | s
   if (typeof _prefix === 'function') {
     if (util.types.isAsyncFunction(_prefix)) {
       return _prefix(msg)
-        .then((prefix: string | string[]) => prefix)
+        .then((prefix: string | string[]) => prefix || '!')
         .catch((error: Error) => {
           throw new Error(error.message)
         })
@@ -71,7 +71,7 @@ class Message {
   }
 
   async _configure (): Promise<void> {
-    this.prefix = await prefix(this, this.#client._options?.commandHandler?.prefix)
+    this.prefix = await prefix(this, this.#client._options?.commandHandler?.prefix) || '!'
     this.color = await color(this, this.#client._options?.commandHandler?.color)
     this.text = await text(this, this.#client._options?.commandHandler?.text)
     this.logo = await logo(this, this.#client._options?.commandHandler?.logo)
