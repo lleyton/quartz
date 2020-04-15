@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("source-map-support/register");
 const client_1 = __importDefault(require("./client"));
 exports.Client = client_1.default;
-const Base_1 = __importDefault(require("./structures/Base"));
-exports.Base = Base_1.default;
 const Command_1 = __importDefault(require("./structures/Command"));
 exports.Command = Command_1.default;
 const Event_1 = __importDefault(require("./structures/Event"));

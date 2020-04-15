@@ -10,7 +10,7 @@ class Command extends Base_1.default {
         super(client);
         const { name = '', aliases = [], args = [], channel = null, ownerOnly = false, guildOnly = true, devOnly = false, description = '', cooldown = {
             expires: 5000,
-            command: 2
+            command: 3
         }, botPermissions = this.botPermissions, userPermissions = this.userPermissions } = options;
         this.name = name;
         this.aliases = aliases;
