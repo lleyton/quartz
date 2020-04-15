@@ -111,7 +111,6 @@ class EventHandler {
             return event.run.call(this, msg);
         }
         catch (error) {
-            throw new Error(error);
         }
     }
 }

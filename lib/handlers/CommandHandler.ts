@@ -215,7 +215,7 @@ class CommandHandler {
           return this._client.logger.error(error)
         })
     } catch (error) {
-      throw new Error(error)
+
     }
   }
 }

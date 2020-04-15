@@ -92,7 +92,7 @@ class EventHandler {
       const event = this.events.get('messageCreate')
       return event.run.call(this, msg)
     } catch (error) {
-      throw new Error(error)
+
     }
   }
 }

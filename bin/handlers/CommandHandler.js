@@ -252,7 +252,6 @@ class CommandHandler {
             });
         }
         catch (error) {
-            throw new Error(error);
         }
     }
 }
