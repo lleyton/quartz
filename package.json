@@ -1,6 +1,6 @@
 {
   "name": "@points.city/quartz",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "The heart of Points",
   "main": "bin/index",
   "typings": "lib/index.d.ts",

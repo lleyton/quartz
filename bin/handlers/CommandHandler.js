@@ -130,15 +130,19 @@ class CommandHandler {
             await msg._configure();
             const content = msg.content.toLowerCase();
             if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
-                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')})\\s*`);
-                if (!prefixRegex.test(content))
-                    return undefined;
-                const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
-                if (!matchedPrefix)
-                    return undefined;
-                msg.prefix = matchedPrefix;
+                if (msg.prefix.length <= 0)
+                    msg.prefix = null;
+                else {
+                    const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')})\\s*`);
+                    if (!prefixRegex.test(content))
+                        return undefined;
+                    const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
+                    if (!matchedPrefix)
+                        return undefined;
+                    msg.prefix = matchedPrefix;
+                }
             }
-            else {
+            else if (msg.prefix) {
                 const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_c = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _c === void 0 ? void 0 : _c.toLowerCase()})\\s*`);
                 if (!prefixRegex.test(content))
                     return;

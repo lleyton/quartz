@@ -87,6 +87,8 @@ class EventHandler {
                     const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
                     if (matchedPrefix)
                         msg.prefix = matchedPrefix;
+                    else
+                        msg.prefix = null;
                 }
             }
             else if (msg.prefix) {
@@ -94,6 +96,8 @@ class EventHandler {
                 const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
                 if (matchedPrefix)
                     msg.prefix = matchedPrefix;
+                else
+                    msg.prefix = null;
             }
             if (msg === null || msg === void 0 ? void 0 : msg.prefix) {
                 const args = msg.content.substring(msg.prefix.length).split(' ');
