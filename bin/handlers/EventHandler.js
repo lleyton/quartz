@@ -59,7 +59,7 @@ class EventHandler {
             if (quartzEvents.includes(evt.name))
                 this._client.on(evt.name, evt.run.bind(this));
             else if (evt.name === 'messageCreate')
-                this.client.on(evt.name, this._onMessageCreate.bind(this));
+                return undefined;
             else if (evt.name === 'ready')
                 this.client.once(evt.name, evt.run.bind(this));
             else
@@ -71,7 +71,6 @@ class EventHandler {
      * @param {object} msg - The message object
      */
     async _onMessageCreate(_msg) {
-        var _a, _b;
         try {
             if (!_msg.author || _msg.author.bot)
                 return;
@@ -79,11 +78,13 @@ class EventHandler {
             await msg._configure();
             msg.command = null;
             const content = msg.content.toLowerCase();
+            const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
                 if (msg.prefix.length <= 0)
                     msg.prefix = null;
                 else {
-                    const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_a = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _a === void 0 ? void 0 : _a.join('|')})\\s*`);
+                    msg.prefix.forEach((p) => escapeRegex(p));
+                    const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg.prefix.join('|')})\\s*`);
                     const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
                     if (matchedPrefix)
                         msg.prefix = matchedPrefix;
@@ -91,8 +92,8 @@ class EventHandler {
                         msg.prefix = null;
                 }
             }
-            else if (msg.prefix) {
-                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${(_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.toLowerCase()})\\s*`);
+            else if (msg === null || msg === void 0 ? void 0 : msg.prefix) {
+                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg.prefix.toLowerCase())})\\s*`);
                 const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
                 if (matchedPrefix)
                     msg.prefix = matchedPrefix;
@@ -103,14 +104,19 @@ class EventHandler {
                 const args = msg.content.substring(msg.prefix.length).split(' ');
                 const label = args.shift().toLowerCase();
                 const command = await this._client.commandHandler.getCommand(label);
-                // @ts-ignore
-                if (command)
+                if (command) {
+                    // @ts-ignore
                     msg.command = command;
+                    await this._client.commandHandler.handleCommand(msg, msg.command, args);
+                }
             }
-            const event = this.events.get('messageCreate');
-            return event.run.call(this, msg);
+            if ((this._client._options.eventHandler.commands && msg.command) || !msg.command) {
+                const event = this.events.get('messageCreate');
+                return event.run.call(this, msg);
+            }
         }
         catch (error) {
+            console.log(error);
         }
     }
 }

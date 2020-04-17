@@ -33,7 +33,7 @@ class Client extends eris_1.default.Client {
         // Load commands using commandHandler
         await this.commandHandler.loadCommands();
         // Bind messageCreate to commandHandler
-        this.on('messageCreate', this.commandHandler._onMessageCreate.bind(this.commandHandler));
+        this.on('messageCreate', this.eventHandler._onMessageCreate.bind(this.eventHandler));
         // Connect to discord using eris client
         return await this.connect().catch((error) => {
             throw new Error(`Unable to start: ${error.message}`);

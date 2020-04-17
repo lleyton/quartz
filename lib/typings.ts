@@ -11,6 +11,7 @@ export interface ClientOptions {
   eventHandler?: {
     directory?: string
     debug?: boolean
+    commands?: boolean
   }
   commandHandler?: {
     prefix?: Function | string | string[]

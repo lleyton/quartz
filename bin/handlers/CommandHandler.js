@@ -14,7 +14,6 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 const eris_1 = require("eris");
 const ArgumentHandler_1 = __importDefault(require("./ArgumentHandler"));
-const Message_1 = __importDefault(require("../structures/Message"));
 /** CommandHandler Class */
 class CommandHandler {
     /**
@@ -121,69 +120,34 @@ class CommandHandler {
      * Runs commands
      * @param {object} msg - The message object
      */
-    async _onMessageCreate(_msg) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+    async handleCommand(msg, command, args) {
+        var _a, _b, _c, _d, _e, _f;
         try {
-            if (!_msg.author || _msg.author.bot || !((_a = _msg.member) === null || _a === void 0 ? void 0 : _a.guild))
-                return;
-            const msg = new Message_1.default(_msg, this.client);
-            await msg._configure();
-            const content = msg.content.toLowerCase();
-            if (Array.isArray(msg === null || msg === void 0 ? void 0 : msg.prefix)) {
-                if (msg.prefix.length <= 0)
-                    msg.prefix = null;
-                else {
-                    const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${((_b = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _b === void 0 ? void 0 : _b.join('|')) || '!'})\\s*`);
-                    if (!prefixRegex.test(content))
-                        return undefined;
-                    const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
-                    if (!matchedPrefix)
-                        return undefined;
-                    msg.prefix = matchedPrefix;
-                }
-            }
-            else if (msg.prefix) {
-                const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${((_c = msg === null || msg === void 0 ? void 0 : msg.prefix) === null || _c === void 0 ? void 0 : _c.toLowerCase()) || '!'})\\s*`);
-                if (!prefixRegex.test(content))
-                    return;
-                const matchedPrefix = content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined;
-                if (!matchedPrefix)
-                    return;
-                msg.prefix = matchedPrefix;
-            }
-            if (!msg.prefix)
-                return;
-            const args = ((_d = msg === null || msg === void 0 ? void 0 : msg.cleanContent) === null || _d === void 0 ? void 0 : _d.slice(msg.prefix.length).trim().split(/ +/)) || ((_e = msg === null || msg === void 0 ? void 0 : msg.content) === null || _e === void 0 ? void 0 : _e.slice(msg.prefix.length).trim().split(/ +/));
-            const label = args.shift().toLowerCase();
-            const command = this.getCommand(label);
-            if (!command)
-                return;
-            // @ts-ignore
-            msg.command = command;
             const argumentHandler = new ArgumentHandler_1.default(this.client, command, args);
             const parsedArgs = await argumentHandler.parse(msg);
             if (!parsedArgs)
                 return;
             // @ts-ignore
             const channelPermissions = msg.channel.permissionsOf(this.client.user.id);
-            if (!channelPermissions.has('sendMessages') || !channelPermissions.has('embedLinks'))
+            if (!channelPermissions.has('sendMessages'))
                 return;
+            if (!channelPermissions.has('embedLinks'))
+                return await msg.channel.createMessage(`${msg.author.mention}, \`Embed Links\` is required for the bot to work!`);
             if (command.botPermissions) {
                 if (typeof command.botPermissions === 'function') {
                     const missing = await command.botPermissions(msg);
                     if (missing != null)
-                        return this._client.emit('missingPermission', msg, command, missing);
+                        return this._client.emit('missingPermission', msg, command, missing, true);
                 }
-                else if ((_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild) {
-                    const botPermissions = (_g = msg.member) === null || _g === void 0 ? void 0 : _g.guild.members.get(this.client.user.id).permission;
+                else if ((_a = msg.member) === null || _a === void 0 ? void 0 : _a.guild) {
+                    const botPermissions = (_b = msg.member) === null || _b === void 0 ? void 0 : _b.guild.members.get(this.client.user.id).permission;
                     if (command.botPermissions instanceof Array) {
-                        for (const p of command.botPermissions) {
-                            if (!botPermissions.has(p))
-                                return this._client.emit('missingPermission', msg, command, p);
-                        }
+                        const hasPermission = command.botPermissions.some((permission) => botPermissions.has(permission) || channelPermissions.has(permission));
+                        if (!hasPermission)
+                            return this._client.emit('missingPermission', msg, command, command.botPermissions, true);
                     }
                     else {
-                        if (!botPermissions.has(command.botPermissions))
+                        if (!botPermissions.has(command.botPermissions) && !channelPermissions.has(command.botPermissions))
                             return this._client.emit('missingPermission', msg, command, command.botPermissions);
                     }
                 }
@@ -211,10 +175,10 @@ class CommandHandler {
                     this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 });
                 }
             }
-            if (command.guildOnly && !((_h = msg.member) === null || _h === void 0 ? void 0 : _h.guild))
+            if (command.guildOnly && !((_c = msg.member) === null || _c === void 0 ? void 0 : _c.guild))
                 return;
-            if ((_j = msg.member) === null || _j === void 0 ? void 0 : _j.guild)
-                msg.guild = (_k = msg.member) === null || _k === void 0 ? void 0 : _k.guild;
+            if ((_d = msg.member) === null || _d === void 0 ? void 0 : _d.guild)
+                msg.guild = (_e = msg.member) === null || _e === void 0 ? void 0 : _e.guild;
             if (command.ownerOnly && msg.author.id !== this._client.owner)
                 return;
             if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner)
@@ -223,22 +187,22 @@ class CommandHandler {
                 if (typeof command.userPermissions === 'function') {
                     const missing = await command.userPermissions(msg);
                     if (missing != null) {
-                        this._client.emit('missingPermission', msg, command, missing);
+                        this._client.emit('missingPermission', msg, command, missing, false);
                         return;
                     }
                 }
-                else if ((_l = msg.member) === null || _l === void 0 ? void 0 : _l.guild) {
+                else if ((_f = msg.member) === null || _f === void 0 ? void 0 : _f.guild) {
                     if (Array.isArray(command.userPermissions)) {
                         command.userPermissions.forEach((userPermission) => {
                             const permission = msg.member.permission.has(userPermission);
                             if (!permission)
-                                return this._client.emit('missingPermission', msg, command, userPermission);
+                                return this._client.emit('missingPermission', msg, command, userPermission, false);
                         });
                     }
                     else {
                         const permission = msg.member.permission.has(command.userPermissions);
                         if (!permission)
-                            return this._client.emit('missingPermission', msg, command, command.userPermissions);
+                            return this._client.emit('missingPermission', msg, command, command.userPermissions, false);
                     }
                 }
             }
@@ -253,6 +217,7 @@ class CommandHandler {
             });
         }
         catch (error) {
+            console.log(error);
         }
     }
 }

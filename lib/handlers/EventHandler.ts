@@ -51,7 +51,7 @@ class EventHandler {
       this.events.set(evt.name, evt)
       if (this.debug) this._client.logger.info(`Loading event ${evt.name}`)
       if (quartzEvents.includes(evt.name)) this._client.on(evt.name, evt.run.bind(this))
-      else if (evt.name === 'messageCreate') this.client.on(evt.name, this._onMessageCreate.bind(this))
+      else if (evt.name === 'messageCreate') return undefined
       else if (evt.name === 'ready') this.client.once(evt.name, evt.run.bind(this))
       else this.client.on(evt.name, evt.run.bind(this))
     })
@@ -68,16 +68,18 @@ class EventHandler {
       await msg._configure()
       msg.command = null
       const content: string = msg.content.toLowerCase()
+      const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       if (Array.isArray(msg?.prefix)) {
         if (msg.prefix.length <= 0) msg.prefix = null
         else {
-          const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.join('|')})\\s*`)
+          msg.prefix.forEach((p: string) => escapeRegex(p))
+          const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg.prefix.join('|')})\\s*`)
           const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
           if (matchedPrefix) msg.prefix = matchedPrefix
           else msg.prefix = null
         }
-      } else if (msg.prefix) {
-        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${msg?.prefix?.toLowerCase()})\\s*`)
+      } else if (msg?.prefix) {
+        const prefixRegex = new RegExp(`^(<@!?${this.client.user.id}>|${escapeRegex(msg.prefix.toLowerCase())})\\s*`)
         const matchedPrefix = prefixRegex.test(content) && content.match(prefixRegex) ? content.match(prefixRegex)[0] : undefined
         if (matchedPrefix) msg.prefix = matchedPrefix
         else msg.prefix = null
@@ -86,13 +88,18 @@ class EventHandler {
         const args: string[] = msg.content.substring(msg.prefix.length).split(' ')
         const label: string = args.shift().toLowerCase()
         const command: Command = await this._client.commandHandler.getCommand(label)
-        // @ts-ignore
-        if (command) msg.command = command
+        if (command) {
+          // @ts-ignore
+          msg.command = command
+          await this._client.commandHandler.handleCommand(msg, msg.command, args)
+        }
       }
-      const event = this.events.get('messageCreate')
-      return event.run.call(this, msg)
+      if ((this._client._options.eventHandler.commands && msg.command) || !msg.command) {
+        const event = this.events.get('messageCreate')
+        return event.run.call(this, msg)
+      }
     } catch (error) {
-
+      console.log(error)
     }
   }
 }
