@@ -39,10 +39,12 @@ class EventHandler {
    * Load the events from the folder
    */
   async loadEvents (): Promise<void> {
-    const files = await readdirSync(this.directory).filter((f: string) => f.endsWith('.js') || f.endsWith('.ts'))
+    const files = await readdirSync(this.directory)
+      .filter((f: string) => f.endsWith('.js') || f.endsWith('.ts'))
     if (files.length <= 0) throw new Error(`No files found in events folder '${this.directory}'`)
-    await files.forEach(async (file: string) => {
-      let Event = await import(resolve(`${this.directory}${sep}${file}`))
+    files.forEach(async (file: string) => {
+      // thing is, i tried on alpha the thing and it didn't even have the ready event ill send pic on dsicord
+      let Event = await import(resolve(`${this.directory}${sep}${file}`)) // The easiest way to fix it would be to log each file by its name, then see if your ready events keeps on being loaded.
       if (typeof Event !== 'function') Event = Event.default
       const evt = new Event(this.client)
       if (!evt) throw new Error(`Event ${this.directory}${sep}${file} file is empty`)
@@ -54,7 +56,7 @@ class EventHandler {
       else if (evt.name === 'messageCreate') return undefined
       else if (evt.name === 'ready') this.client.once(evt.name, evt.run.bind(this))
       else this.client.on(evt.name, evt.run.bind(this))
-    })
+    }) // what did you say about the evt.run.bind(this) thing. what shoul di replace it with?
   }
 
   /**

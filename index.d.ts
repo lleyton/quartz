@@ -8,8 +8,8 @@ declare module '@points.city/quartz' {
     color?: string | number
     text?: string
     logo?: string
+    settings?: any
     embed?(message: string, options?: any): Promise<Message>
-    settings?(): any
   }
 
   export interface ClientOptions {
@@ -48,7 +48,7 @@ declare module '@points.city/quartz' {
     command?: number
   }
 
-  export class Client {
+  export class Client extends Eris.Client {
     owner: string | null
     logger: LogHandler
     eventHandler: EventHandler

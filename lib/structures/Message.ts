@@ -55,8 +55,22 @@ const logo = (msg: Message, _logo: Function | string): string => {
   } else return _logo
 }
 
+const settings = (msg: Message, _settings: Function | object) => {
+  if (typeof _settings === 'function') {
+    if (util.types.isAsyncFunction(_settings)) {
+      return _settings(msg)
+        .then((settings: any) => settings)
+        .catch((error: Error) => {
+          throw new Error(error.message)
+        })
+    }
+    return _settings(msg)
+  } else return _settings
+}
+
 class Message {
   #client: Client
+  settings: any
   color: string | number
   text: string
   logo: string
@@ -67,10 +81,12 @@ class Message {
 
   constructor (msg: Eris.Message, client: Client) {
     Object.assign(this, msg)
+    this.guild = msg?.member?.guild
     this.#client = client
   }
 
   async _configure (): Promise<void> {
+    this.settings = await settings(this, this.#client._options?.commandHandler?.settings)
     this.prefix = await prefix(this, this.#client._options?.commandHandler?.prefix) || '!'
     this.color = await color(this, this.#client._options?.commandHandler?.color)
     this.text = await text(this, this.#client._options?.commandHandler?.text)
@@ -104,24 +120,6 @@ class Message {
         .then((erisMsg) => resolve((new Message(erisMsg, this.#client))))
         .catch((error) => reject(error))
     })
-  }
-
-  /**
-   * Get server settings
-   * @param {object} msg - The message object
-   * @return {object} The settings object
-   */
-  settings (): any {
-    if (typeof this.#client._options?.commandHandler?.settings === 'function') {
-      if (util.types.isAsyncFunction(this.#client._options?.commandHandler?.settings)) {
-        return this.#client._options?.commandHandler?.settings(this)
-          .then((settings: any) => settings)
-          .catch((error: Error) => {
-            throw new Error(error.message)
-          })
-      }
-      return this.#client._options?.commandHandler?.settings(this)
-    } else return this.#client._options?.commandHandler?.settings
   }
 }
 

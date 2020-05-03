@@ -1,6 +1,6 @@
 {
   "name": "@points.city/quartz",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "The heart of Points",
   "main": "bin/index",
   "typings": "lib/index.d.ts",
@@ -22,11 +22,9 @@
     "@types/node": "^12.12.14",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "eslint": "^6.8.0",
-    "eslint-config-standard-with-typescript": "^15.0.1",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
     "typescript": "^3.8.3"
   }
 }

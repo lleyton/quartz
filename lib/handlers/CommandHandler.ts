@@ -5,10 +5,12 @@ import ArgumentHandler from './ArgumentHandler'
 import { ClientOptions, Message as MessageTyping } from '../typings'
 import Command from '../structures/Command'
 import { Client } from '..'
+import PermissionHandler from './PermissionHandler'
 
 /** CommandHandler Class */
 class CommandHandler {
   private readonly _client: Client
+  private readonly _permissionHandler: PermissionHandler
   directory: string
   debug: boolean
   defaultCooldown: number
@@ -32,6 +34,7 @@ class CommandHandler {
     this.modules = new Collection(undefined)
     this.aliases = new Collection(undefined)
     this.cooldowns = new Collection(undefined)
+    this._permissionHandler = new PermissionHandler(client)
   }
 
   /**
@@ -116,27 +119,16 @@ class CommandHandler {
    */
   async handleCommand (msg: MessageTyping, command: Command, args: string[]): Promise<void|any> {
     try {
-      const argumentHandler = new ArgumentHandler(this.client, command, args)
-      const parsedArgs = await argumentHandler.parse(msg)
-      if (!parsedArgs) return
+      if (command.guildOnly && !msg.member?.guild) return
+      if (command.ownerOnly && msg.author.id !== this._client.owner) return
+      if (msg.member?.guild) msg.guild = msg.member?.guild
+      if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner) return this.client.embeds.embed(msg, `<@${msg.author.id}>, **Currently Unavailable:** The bot is currently unavailable.`)
       // @ts-ignore
       const channelPermissions: Eris.Permission = msg.channel.permissionsOf(this.client.user.id)
       if (!channelPermissions.has('sendMessages')) return
       if (!channelPermissions.has('embedLinks')) return await msg.channel.createMessage(`${msg.author.mention}, \`Embed Links\` is required for the bot to work!`)
-      if (command.botPermissions) {
-        if (typeof command.botPermissions === 'function') {
-          const missing = await command.botPermissions(msg)
-          if (missing != null) return this._client.emit('missingPermission', msg, command, missing, true)
-        } else if (msg.member?.guild) {
-          const botPermissions = msg.member?.guild.members.get(this.client.user.id).permission
-          if (command.botPermissions instanceof Array) {
-            const hasPermission = command.botPermissions.some((permission) => botPermissions.has(permission) || channelPermissions.has(permission))
-            if (!hasPermission) return this._client.emit('missingPermission', msg, command, command.botPermissions, true)
-          } else {
-            if (!botPermissions.has(command.botPermissions) && !channelPermissions.has(command.botPermissions)) return this._client.emit('missingPermission', msg, command, command.botPermissions)
-          }
-        }
-      }
+      if (!await this._permissionHandler.bot(msg, command, channelPermissions)) return
+      if (!await this._permissionHandler.user(msg, command)) return
       if (command.cooldown && command.cooldown.expires && command.cooldown.command && msg.author.id !== this._client.owner) {
         const checkCooldown = this.cooldowns.get(msg.author.id)
         if (checkCooldown?.expires) {
@@ -156,29 +148,9 @@ class CommandHandler {
           this.cooldowns.set(msg.author.id, { expires: Date.now() + Number(command.cooldown.expires), notified: false, command: 1 })
         }
       }
-      if (command.guildOnly && !msg.member?.guild) return
-      if (msg.member?.guild) msg.guild = msg.member?.guild
-      if (command.ownerOnly && msg.author.id !== this._client.owner) return
-      if (process.env.NODE_ENV !== 'development' && command.devOnly && msg.author.id !== this._client.owner) return this.client.embeds.embed(msg, `<@${msg.author.id}>, **Currently Unavailable:** The bot is currently unavailable.`)
-      if (command.userPermissions) {
-        if (typeof command.userPermissions === 'function') {
-          const missing = await command.userPermissions(msg)
-          if (missing != null) {
-            this._client.emit('missingPermission', msg, command, missing, false)
-            return
-          }
-        } else if (msg.member?.guild) {
-          if (Array.isArray(command.userPermissions)) {
-            command.userPermissions.forEach((userPermission) => {
-              const permission = msg.member.permission.has(userPermission)
-              if (!permission) return this._client.emit('missingPermission', msg, command, userPermission, false)
-            })
-          } else {
-            const permission = msg.member.permission.has(command.userPermissions)
-            if (!permission) return this._client.emit('missingPermission', msg, command, command.userPermissions, false)
-          }
-        }
-      }
+      const argumentHandler = new ArgumentHandler(this.client, command, args)
+      const parsedArgs = await argumentHandler.parse(msg)
+      if (!parsedArgs) return
       // @ts-ignore
       await command.run(msg, parsedArgs || args)
         .then(() => {
