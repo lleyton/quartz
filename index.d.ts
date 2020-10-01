@@ -1,15 +1,13 @@
 import Eris from 'eris'
+import CooldownHandler from './src/handlers/CooldownHandler'
+import PermissionHandler from './src/handlers/PermissionHandler'
 
 declare module '@points.city/quartz' {
-  export interface Message extends Eris.Message {
-    guild?: Eris.Guild
-    command?: Command
-    prefix?: string | string[]
-    color?: string | number
-    text?: string
-    logo?: string
-    settings?: any
-    embed?(message: string, options?: any): Promise<Message>
+  export interface CommandContext {
+    message: Eris.Message,
+    command: Command,
+    prefix: string | string[]
+    arguments: string[]
   }
 
   export interface ClientOptions {
@@ -35,14 +33,6 @@ declare module '@points.city/quartz' {
     }
   }
 
-  export interface EmbedOptions {
-    reply?: boolean
-    bold?: boolean
-    color?: any
-    footer?: boolean
-    text?: boolean
-  }
-
   export interface Cooldown {
     expires?: number
     command?: number
@@ -65,7 +55,8 @@ declare module '@points.city/quartz' {
     commands: Eris.Collection<any>
     modules: Eris.Collection<any>
     aliases: Eris.Collection<any>
-    cooldowns: Eris.Collection<any>
+    cooldownHandler: CooldownHandler
+    permissionHandler: PermissionHandler
     constructor (client: Client, options: ClientOptions['commandHandler'])
     client(): Client
     getCommand(commandName: string): Command
@@ -109,7 +100,7 @@ declare module '@points.city/quartz' {
     default?: string | ((msg: any) => void)
   }
 
-  interface CommandOptions {
+  export interface CommandOptions {
     name: string
     aliases?: string[]
     args?: Argument[]
@@ -131,7 +122,11 @@ declare module '@points.city/quartz' {
   }
 
   export class Embed {
-    fields: any[]
+    fields: {
+      name: string
+      value: string
+      inline?: boolean
+    }[]
     url: string
     author: {
       name: string
@@ -139,7 +134,7 @@ declare module '@points.city/quartz' {
       url: string
     }
 
-    color: string
+    color: number
     description: string
     file: string
     footer: {
@@ -157,18 +152,18 @@ declare module '@points.city/quartz' {
       url: string
     }
 
-    constructor(data: any)
-    setAuthor(name: string, icon: string, url: string): void
-    setColor(color: any): void
-    setDescription(desc: string): void
-    addField(name: string, value: string, inline: boolean): void
-    setFile(file: string): void
-    setFooter(text: string, icon: string): void
-    setImage(url: string): void
-    setTimestamp (time: any): void
-    setTitle(title: string): void
-    setThumbnail(url: string): void
-    setURL(url: string): void
+    constructor(data?: any)
+    setAuthor(name: string, icon?: string, url?: string): Embed
+    setColor(color: string | number): Embed
+    setDescription(desc: string): Embed
+    addField(name: string, value: string, inline?: boolean): Embed
+    setFile(file: string): Embed
+    setFooter(text: string, icon?: string): Embed
+    setImage(url: string): Embed
+    setTimestamp (time?: any): Embed
+    setTitle(title: string): Embed
+    setThumbnail(url: string): Embed
+    setURL(url: string): Embed
   }
 
   interface EventOptions {

@@ -1,9 +1,9 @@
 {
   "name": "@points.city/quartz",
-  "version": "2.0.8",
+  "version": "2.1.0",
   "description": "The heart of Points",
-  "main": "bin/index",
-  "typings": "lib/index.d.ts",
+  "main": "lib/index",
+  "typings": "index.d.ts",
   "author": "Adam <adam@atiktech.co>",
   "license": "MIT",
   "repository": "https://github.com/pointscity/quartz",
@@ -12,19 +12,23 @@
     "lint": "eslint --ext .js,.ts ."
   },
   "dependencies": {
-    "chalk": "^2.4.2",
+    "chalk": "^4.1.0",
+    "fs-extra": "^9.0.1",
     "source-map-support": "^0.5.16"
   },
   "peerDependencies": {
-    "eris": "^0.12.0"
+    "eris": "^0.13.3"
   },
   "devDependencies": {
-    "@types/node": "^12.12.14",
-    "@typescript-eslint/eslint-plugin": "^2.27.0",
-    "eslint": "^6.8.0",
-    "eslint-plugin-import": "^2.20.2",
+    "@types/fs-extra": "^9.0.1",
+    "@types/node": "^14.11.2",
+    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@typescript-eslint/parser": "^4.3.0",
+    "eris": "^0.13.3",
+    "eslint": "^7.10.0",
+    "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "typescript": "^3.8.3"
+    "typescript": "^4.0.3"
   }
 }
