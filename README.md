@@ -6,14 +6,14 @@
 
 ## Setup
 
- 1. Run `npm i https://github.com/pointscity/quartz.git` or `yarn add https://github.com/pointscity/quartz.git`
+ 1. Run `npm i @pointscity/quartz` or `yarn add @pointscity/quartz`
  2. Then run `npm i eris` or `yarn add eris`
  4. Setup client and command handler
 
 ## Examples
 
 Client Example:
-```js
+```ts
 import { Client } from 'quartz'
 import { resolve } from 'path'
 
@@ -32,11 +32,13 @@ client.start()
 ```
 
 Command Example:
-```js
-import { Command } from 'quartz'
+```ts
+import { Command, CommandContext, Client } from 'quartz'
 
 class Ping extends Command {
-  constructor (client) {
+  client: Client
+
+  constructor (client: Client) {
     super(client, {
       name: 'ping',
       aliases: ['pong'],
@@ -46,8 +48,8 @@ class Ping extends Command {
     })
   }
 
-  run (msg, args) {
-    return msg.channel.createMessage('Pong!')
+  run (context: CommandContext) {
+    return context.message.channel.createMessage('Pong!')
   }
 }
 
@@ -56,10 +58,12 @@ export default Ping
 
 Event Example:
 ```js
-import { Event } from 'quartz'
+import { Event, Client } from 'quartz'
 
 class Ready extends Event {
-  constructor (client) {
+  client: Client
+
+  constructor (client: Client) {
     super(client, {
       name: 'ready'
     })
